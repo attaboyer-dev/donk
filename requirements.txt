@@ -1,0 +1,124 @@
+High-Level:
+
+- Browser-based poker
+- 9-handed max
+- No-Limit Holdem
+- Win/Loss Per Session
+- Win/Loss Overall
+- Hand Summary
+- Private Tables 
+- 7/2 Rule
+
+NTH:
+ - Mobile Support
+ - PLO
+
+
+Technical Considerations
+ - Container based or no?
+ - Web-Sockets / Updates across users
+    - Actions go to server -> server validates and propagates down
+
+Process Narrative
+
+    A user creates an account. They are prompted to validate their email. They validate their email. It routes them back to login, which they do. What do they see?   
+    They should be able to setup a table. Small blind, big blind, and max buy-information. That, or be able to select from a variety of options. Type of game. 
+    Whether its private or password protected. They should also be able to see other, existing tables. By friends? Anyone?
+    Table creator can set the settings. Settings can't be changed unless the table is empty.
+
+    User creates a new table. Sets attributes. Game mods can be toggled on/off.
+
+    Players can only join tables they're invited to. Owner of a table can specific the usernames allowed. 
+
+    Players can join a table, without sitting down. They can SIT in a SEAT. BUY-IN, and RE-BUY. Players can add up to the table max, as long as they're not in a hand.
+
+    You can switch seats, provided you're not actively in a hand. There's validation on switching seats where you can't skip blinds, if you do you must pay, or wait for blinds.
+
+    The key is there's a "PLAYER_STATE" for a table, and a "TABLE_STATE"
+
+    HAND Process:
+        1a. CHECK FIRST HAND - ASSIGN BUTTON - ELSE
+        1b. MOVE BUTTON ONE ACTIVE SEAT
+        2a. BLINDS PAID
+        2b. IF A BLIND CANNOT BE PAID IN FULL, PLAYER ALL IN
+        2. SERVER SENDS CARDS TO EACH ACTIVE SEATS. BASED ON GAME TYPE.
+        3. FIRST NON-BLIND PLAYER ACTS
+        4. CLOCKWISE, ACTIVE PLAYERS CALL/RAISE/FOLD AS APPROPRIATE
+        5a. ACTIONS SENT TO SERVER -> SERVER VALIDATES ACTION -> IS VALID, UPDATES GAME_STATE
+        5b. IF ACTION NOT SENT IN TIME, PRIORITIZE FOLD/CHECK
+        6. SERVER DETERMINES NEXT ACTION PER GAME_STATE UPDATE
+        7. SERVER CREATES ACTION_LOG FOR EACH PLAYER
+        8. UTG, UTG+1, UTG+2, BB, SB, BTN
+        9. GAME CANNOT BE PLAYED WITHOUT BB, SB, BTN
+
+    SERVER GAME PROCESS
+        START_HAND
+            1. DETERMINE BUTTON LOCATION
+            2. ASSIGN SEATS (BTN, SB, BB, UTG+N) -> LOG SEATS
+            3. SUBTRACT BLINDS, UPDATE USER_STATE -> LOG_ACTION -> NOTIFY_USER
+            4. PROMPT_USER_ACTION (Cycle)
+                4a. WAIT:
+                    IF DELAY -> FORCE_ACTION   -> LOG_ACTION -> NOTIFY_PLAYERS
+                    NO DELAY -> RECIEVE_ACTION -> LOG_ACTION -> NOTIFY_PLAYERS
+                5a. PROGRESS OR NEW_USER_ACTION?
+
+    TABLE_STATE
+        - board
+        - pot
+
+    USER_EVENTS
+        - FOLD
+        - CHECK
+        - CALL
+        - RAISE (amount)
+        - SHOW CARDS
+    
+    At the start of each hand, you know the order of player actions. It'll be different if it's preflop or not.
+
+    ASSIGN_BUTTON(players) {} // Randomly 
+    ORDER_PLAYERS(players, is_preflop) {} // Takes the active players, determinig
+
+
+Questions:
+ - How do we guarentee that users are not able to "spoof" actions of other players? Encryption?
+ - How do we effectively find the ordering of actions/players? Linked list?
+
+Architecture
+    - Services
+        - Dealing Service
+            - Ensures the right cards come out. Randomizes
+        - Account Service 
+            - Creation of account
+                - Username/Password/Email
+            - Verification of account/email
+                - Account becomes "active"
+            - Retrival of account information
+            - Deletion of account
+            - Reset password of account
+
+Data Structures
+    - POKER_TABLE
+        - small_blind
+        - big_blind
+        - min_buyin
+        - max_buyin
+        - seat_count
+        - name
+        - id
+        - owner_player_id
+        - players: []
+        - game_type
+        - game_mods: [] 
+
+    - ACCOUNT
+        - id
+        - username
+        - password_hash
+        - email
+        - is_active
+        - is_verified
+
+    - HANDS
+        - Data around all the actions
+
+    

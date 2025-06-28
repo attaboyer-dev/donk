@@ -1,0 +1,20 @@
+{
+  "name": "@donk/backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc && nodemon dist/app.js",
+    "test": "ts-node-dev --respawn --transpile-only src/app.ts"
+  },
+  "dependencies": {
+    "@donk/utils": "*",
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "ws": "^8.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
