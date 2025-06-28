@@ -7,12 +7,13 @@
     "src/utils"
   ],
   "scripts": {
-    "build": "yarn workspace @donk/utils build",
+    "build": "yarn workspaces foreach --topological --recursive run build",
     "fe": "yarn workspace @donk/frontend dev",
     "be": "yarn workspace @donk/backend dev"
   },
   "devDependencies": {
     "prettier": "^3.5.3"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "yarn@4.9.2"
 }

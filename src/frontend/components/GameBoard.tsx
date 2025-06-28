@@ -146,7 +146,7 @@ const GameBoard = () => {
     setTableValue(event.update.table);
   };
 
-  const [userValue, setUserValue] = React.useState<any>();
+  const [userValue, setUserValue] = React.useState<any>({});
   onUserUpdateHandler = (event) => {
     setUserValue(event.update.state);
   };
