@@ -1,27 +1,41 @@
 export enum UserEvent {
-  FOLD = "FOLD",
-  CHECK = "CHECK",
-  CALL = "CALL",
-  RAISE = "RAISE",
-  SHOW = "SHOW",
-  SIT = "SIT",
-  STAND = "STAND",
-  BUYIN = "BUYIN",
-  LEAVE = "LEAVE",
-  JOIN = "JOIN",
+  Fold = "Fold",
+  Check = "Check",
+  Call = "Call",
+  Raise = "Raise",
+  Show = "Show",
+  Sit = "Sit",
+  Stand = "Stand",
+  BuyIn = "BuyIn",
+  Leave = "Leave",
+  Join = "Join",
+  Ready = "Ready",
+  Rename = "Rename",
+}
+
+export enum ServerEvent {
+  UserInfo = "UserInfo",
+  TableState = "TableState",
+  PlayerSat = "PlayerSat",
+  PlayerStood = "PlayerStood",
+  Rename = "Rename",
+  UserJoined = "UserJoined",
+  UserLeft = "UserLeft",
+  PlayerBuyin = "PlayerBuyin",
+  Ready = "Ready",
 }
 
 export enum GameEvent {
-  ASSIGN_BUTTON = "ASSIGN_BUTTON",
-  MOVE_BUTTON = "MOVE_BUTTON",
-  PAY_BLIND = "PAY_BLIND",
-  ASSIGN_BLINDS = "ASSIGN_BLINDS",
-  START_HAND = "START_HAND",
-  END_HAND = "END_HAND",
-  START_ROUND = "START_ROUND",
-  END_ROUND = "END_ROUND",
-  START_TURN = "START_TURN",
-  END_TURN = "END_TURN",
+  AssignButton = "AssignButton",
+  MoveButton = "MoveButton",
+  PayBlind = "PayBlind",
+  AssignBlinds = "AssignBlinds",
+  StartHand = "StartHand",
+  EndHand = "EndHand",
+  StartRound = "StartRound",
+  EndRound = "EndRound",
+  StartTurn = "StartTurn",
+  EndTurn = "EndTurn",
 }
 
 export enum Position {
@@ -38,15 +52,15 @@ export enum Position {
 }
 
 export enum Hand {
-  HIGH_CARD = "HIGH_CARD",
-  PAIR = "PAIR",
-  TWO_PAIR = "TWO_PAIR",
-  THREE_OF_A_KIND = "THREE_OF_A_KIND",
-  STRAIGHT = "STRAIGHT",
-  FLUSH = "FLUSH",
-  FULL_HOUSE = "FULL_HOUSE",
-  STRAIGHT_FLUSH = "STRAIGHT_FLUSH",
-  ROYAL_FLUSH = "ROYAL_FLUSH",
+  HighCard = "High Card",
+  Pair = "Pair",
+  TwoPair = "Two Pair",
+  ThreeOfAKind = "Three of a Kind",
+  Straight = "Straight",
+  Flush = "Flush",
+  FullHouse = "Full House",
+  StraightFlush = "Straight Flush",
+  RoyalFlush = "Royal Flush",
 }
 
 export enum GameType {

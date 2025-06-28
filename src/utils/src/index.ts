@@ -1,2 +1,2 @@
 export { DeckService } from "./Deck";
-export { GameType, UserEvent } from "./enums";
+export { GameType, UserEvent, ServerEvent } from "./enums";

@@ -4,9 +4,10 @@ import WebSocket, { WebSocketServer } from "ws";
 import ServerAction from "./models/ServerAction";
 import UserAction from "./models/UserAction";
 import TableInit from "./models/Table";
-import { UserEvent } from "@donk/utils";
+import { ServerEvent, UserEvent } from "@donk/utils";
 import { User } from "./models/User";
 import { IdentifyableWebSocket } from "./models/IdentifyableWebSocket";
+import { createUuid } from "./utils/helpers";
 
 const database: any = {
   GAME: [],
@@ -30,67 +31,59 @@ const wss = new WebSocketServer({ port: 3032 });
 
 const table = new TableInit();
 
-const createUuid = () => {
-  const s4 = () =>
-    Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
-  return s4() + s4() + s4();
-};
-
 // TODO: Include validation for each of the actions.
 const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
   const player = table.getPlayer(wsc.id);
-  if (userAction.type === UserEvent.FOLD) {
+  if (userAction.type === UserEvent.Fold) {
     // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.CHECK) {
+  } else if (userAction.type === UserEvent.Check) {
     // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.CALL) {
+  } else if (userAction.type === UserEvent.Call) {
     // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.RAISE) {
+  } else if (userAction.type === UserEvent.Raise) {
     // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.SHOW) {
+  } else if (userAction.type === UserEvent.Show) {
     // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.SIT) {
+  } else if (userAction.type === UserEvent.Sit) {
     // TODO: Validate player can sit, THEN
     player.isSitting = true;
     player.assignedSeat = userAction.value;
     const tableDetails = new ServerAction(
-      "PLAYER_SAT",
+      ServerEvent.PlayerSat,
       { location: player.assignedSeat, name: player.name },
       { players: table.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
     });
-  } else if (userAction.type === "STAND") {
+  } else if (userAction.type === UserEvent.Stand) {
     // TODO: Validate player can STAND, THEN
     player.isSitting = false;
     player.assignedSeat = -1;
     const tableDetails = new ServerAction(
-      "PLAYER_STOOD",
+      ServerEvent.PlayerStood,
       { location: userAction.value, name: player.name },
       { players: table.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
     });
-  } else if (userAction.type === "BUYIN") {
+  } else if (userAction.type === UserEvent.BuyIn) {
     //TODO: Valdiation
     player.stack += parseFloat(userAction.value);
     const tableDetails = new ServerAction(
-      "PLAYER_BUYIN",
+      ServerEvent.PlayerBuyin,
       { name: player.name, amount: userAction.value },
       { players: table.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
     });
-  } else if (userAction.type === "LEAVE") {
+  } else if (userAction.type === UserEvent.Leave) {
     // TODO: Participation action
-  } else if (userAction.type === "JOIN") {
+  } else if (userAction.type === UserEvent.Join) {
     // TODO: Participation action
-  } else if (userAction.type === "RENAME") {
+  } else if (userAction.type === UserEvent.Rename) {
     // TODO: Must be unique
     // TODO: Participation action
     const prevName = player.name;
@@ -103,11 +96,11 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
     });
-  } else if (userAction.type === "READY") {
+  } else if (userAction.type === UserEvent.Ready) {
     // TODO: Validation on whether a player can be ready
     player.isReady = true;
     const tableDetails = new ServerAction(
-      "READY",
+      ServerEvent.Ready,
       { name: player.name },
       { players: table.players },
     );

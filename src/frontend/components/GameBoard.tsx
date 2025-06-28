@@ -1,20 +1,12 @@
+import { ServerEvent, UserEvent } from "@donk/utils";
 import React from "react";
 
 const ws = new WebSocket("ws://localhost:3032");
 ws.onopen = (e) => console.log("WebSocket open");
 
+// Should only be doing in dev
 let messageEventListener = (e) => console.log(JSON.parse(e.data));
 ws.addEventListener("message", messageEventListener);
-
-const USER_INFO = "USER_INFO";
-const TABLE_STATE = "TABLE_STATE";
-const PLAYER_SAT = "PLAYER_SAT";
-const PLAYER_STOOD = "PLAYER_STOOD";
-const RENAME = "RENAME";
-const USER_JOINED = "USER_JOINED";
-const USER_LEFT = "USER_LEFT";
-const PLAYER_BUYIN = "PLAYER_BUYIN";
-const READY = "READY";
 
 const foldMessage = () => ({ type: "FOLD" });
 const checkMessage = () => ({ type: "CHECK" });
@@ -31,29 +23,29 @@ const readyMessage = () => ({ type: "READY" });
 
 const sendWSMessage = (action, val) => {
   let message = "";
-  if (action === "FOLD") {
+  if (action === UserEvent.Fold) {
     message = JSON.stringify(foldMessage());
-  } else if (action === "CHECK") {
+  } else if (action === UserEvent.Check) {
     message = JSON.stringify(checkMessage());
-  } else if (action === "CALL") {
+  } else if (action === UserEvent.Call) {
     message = JSON.stringify(callMessage());
-  } else if (action === "RAISE") {
+  } else if (action === UserEvent.Raise) {
     message = JSON.stringify(raiseMessage(val));
-  } else if (action === "SHOW") {
+  } else if (action === UserEvent.Show) {
     message = JSON.stringify(showMessage());
-  } else if (action === "SIT") {
+  } else if (action === UserEvent.Sit) {
     message = JSON.stringify(sitMessage(val));
-  } else if (action === "STAND") {
+  } else if (action === UserEvent.Stand) {
     message = JSON.stringify(standMessage(val));
-  } else if (action === "BUYIN") {
+  } else if (action === UserEvent.BuyIn) {
     message = JSON.stringify(buyInMessage(val));
-  } else if (action === "LEAVE") {
+  } else if (action === UserEvent.Leave) {
     message = JSON.stringify(leaveMessage());
-  } else if (action === "JOIN") {
+  } else if (action === UserEvent.Join) {
     message = JSON.stringify(joinMessage());
-  } else if (action === "RENAME") {
+  } else if (action === UserEvent.Rename) {
     message = JSON.stringify(renameMessage(val));
-  } else if (action === "READY") {
+  } else if (action === UserEvent.Ready) {
     message = JSON.stringify(readyMessage());
   } else {
     console.log("Unexpected event");
@@ -66,23 +58,23 @@ const sendWSMessage = (action, val) => {
 const eventToLog = (event) => {
   const { type, update } = event;
   let toReturn = "";
-  if (type === USER_JOINED) {
+  if (type === ServerEvent.UserJoined) {
     toReturn = "User - " + update.name + " - joined the table";
-  } else if (type === USER_LEFT) {
+  } else if (type === ServerEvent.UserLeft) {
     toReturn = "User - " + update.name + " - left the table";
-  } else if (type === TABLE_STATE) {
+  } else if (type === ServerEvent.TableState) {
     toReturn = "Loading table state for '" + update.table.name + "'";
-  } else if (type === USER_INFO) {
+  } else if (type === ServerEvent.UserInfo) {
     toReturn = "Loading user info";
-  } else if (type === RENAME) {
+  } else if (type === ServerEvent.Rename) {
     toReturn = `Player - ${update.prevName} - renamed to ${update.nextName}`;
-  } else if (type === PLAYER_SAT) {
+  } else if (type === ServerEvent.PlayerSat) {
     toReturn = "Player - " + update.name + " - has sat at Seat " + update.location;
-  } else if (type === PLAYER_STOOD) {
+  } else if (type === ServerEvent.PlayerStood) {
     toReturn = "Player - " + update.name + " - has stood from Seat " + update.location;
-  } else if (type === PLAYER_BUYIN) {
+  } else if (type === ServerEvent.PlayerBuyin) {
     toReturn = `Player - ${update.name} - has added ${update.amount} to their stack`;
-  } else if (type === READY) {
+  } else if (type === ServerEvent.Ready) {
     toReturn = `Player - ${update.name} - is ready`;
   }
   return toReturn;
@@ -100,13 +92,13 @@ ws.addEventListener(
   "message",
   (messageEventListener = (event) => {
     let eventJSON = JSON.parse(event.data);
-    if (eventJSON.type === TABLE_STATE) {
+    if (eventJSON.type === ServerEvent.TableState) {
       onTableUpdateHandler(eventJSON);
-    } else if (eventJSON.type === USER_INFO) {
+    } else if (eventJSON.type === ServerEvent.UserInfo) {
       onUserUpdateHandler(eventJSON);
-    } else if (eventJSON.type === PLAYER_SAT) {
+    } else if (eventJSON.type === ServerEvent.PlayerSat) {
       onPlayerSatHandler(eventJSON);
-    } else if (eventJSON.type === RENAME) {
+    } else if (eventJSON.type === ServerEvent.Rename) {
       onRenameHandler(eventJSON);
     }
 
@@ -154,7 +146,7 @@ const GameBoard = () => {
   // Update client state based on most recent server state
   onNextStateHandler = (event) => {
     const { players } = event.nextState;
-    if (userValue && event.type !== RENAME) {
+    if (userValue && event.type !== ServerEvent.Rename) {
       // RENAME updates the UserValue in it's own manner
       const userIndex = players.findIndex((p) => p.name === userValue.name);
       setUserValue(players[userIndex]);
@@ -181,9 +173,7 @@ const GameBoard = () => {
   onRenameHandler = (event) => {
     const { prevName, nextName } = event.update;
     if (userValue.name === prevName) {
-      console.log("renameUserValue", userValue);
       let test = { ...userValue, name: nextName };
-      console.log("test", test);
       setUserValue({ ...userValue, name: nextName });
     }
   };
@@ -258,15 +248,15 @@ const GameBoard = () => {
           <label>Actions: </label>
           <input onChange={onChangeHandler} value={inputValue} />
           <select name="Action" onChange={onActionChangeHandler} value={actionValue}>
-            <option value="READY">Ready</option>
-            <option value="FOLD">Fold</option>
-            <option value="CHECK">Check</option>
-            <option value="CALL">Call</option>
-            <option value="RAISE">Raise</option>
-            <option value="SHOW">Show</option>
-            <option value="STAND">Stand</option>
-            <option value="BUYIN">Buy In</option>
-            <option value="RENAME">Rename</option>
+            <option value={UserEvent.Ready}>Ready</option>
+            <option value={UserEvent.Fold}>Fold</option>
+            <option value={UserEvent.Check}>Check</option>
+            <option value={UserEvent.Call}>Call</option>
+            <option value={UserEvent.Raise}>Raise</option>
+            <option value={UserEvent.Show}>Show</option>
+            <option value={UserEvent.Stand}>Stand</option>
+            <option value={UserEvent.BuyIn}>Buy In</option>
+            <option value={UserEvent.Rename}>Rename</option>
           </select>
         </div>
         <button onClick={onSend}>Send</button>
