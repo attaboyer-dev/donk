@@ -13,7 +13,6 @@
     "[typescriptreact]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    /** Spell-check dictionary additions */
     "cSpell.words": [
         "buyin",
         "donk",
