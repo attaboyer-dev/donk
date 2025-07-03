@@ -1,6 +1,3 @@
-# VSCode
-.vscode/
-
 # Misc
 *.tsbuildinfo
 **/node_modules/
@@ -8,6 +5,3 @@
 **/.next/
 .DS_Store
 .yarn/install-state.gz
-
-# nvm
-package.json

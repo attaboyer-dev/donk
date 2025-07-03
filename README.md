@@ -5,7 +5,11 @@ The greatest poker application ever created.
 
 ### MacOS
 1. Install open-source package manager [brew](https://brew.sh/).
-1. Install node version manager: `brew install nvm` 
+1. Install node version manager and javascript package manager:
+    ``` bash
+    $ brew install nvm
+    $ corepack enable; yarn
+    ```
 
 ### Windows
 1. Install open-source package manager [Scoop](https://scoop.sh/).
@@ -14,8 +18,10 @@ The greatest poker application ever created.
     $ scoop install nvm
     $ scoop install nodejs
     $ scoop install yarn
+
+    $ corepack enable; yarn # Installs javascript package manager
     ```
-1. Restart Powershell, confirm all components are installed successfully:
+1. Restart Powershell to load environment variables, and confirm all components are installed successfully:
     ``` powershell
     $ nvm -v
     $ node -v
@@ -24,7 +30,6 @@ The greatest poker application ever created.
 
 ## Build and deploy locally
 ``` bash
-$ corepack enable; yarn # Install javascript package manager
 $ yarn build
 $ yarn be # backend
 $ yarn fe # frontend
