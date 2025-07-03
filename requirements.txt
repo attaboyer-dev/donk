@@ -59,7 +59,7 @@ Process Narrative
             4. PROMPT_USER_ACTION (Cycle)
                 4a. WAIT:
                     IF DELAY -> FORCE_ACTION   -> LOG_ACTION -> NOTIFY_PLAYERS
-                    NO DELAY -> RECIEVE_ACTION -> LOG_ACTION -> NOTIFY_PLAYERS
+                    NO DELAY -> RECEIVE_ACTION -> LOG_ACTION -> NOTIFY_PLAYERS
                 5a. PROGRESS OR NEW_USER_ACTION?
 
     TABLE_STATE
@@ -75,12 +75,12 @@ Process Narrative
     
     At the start of each hand, you know the order of player actions. It'll be different if it's preflop or not.
 
-    ASSIGN_BUTTON(players) {} // Randomly 
-    ORDER_PLAYERS(players, is_preflop) {} // Takes the active players, determinig
+    ASSIGN_BUTTON(players) {} // Randomly
+    ORDER_PLAYERS(players, is_preflop) {} // Takes the active players, determining
 
 
 Questions:
- - How do we guarentee that users are not able to "spoof" actions of other players? Encryption?
+ - How do we guarantee that users are not able to "spoof" actions of other players? Encryption?
  - How do we effectively find the ordering of actions/players? Linked list?
 
 Architecture
@@ -92,7 +92,7 @@ Architecture
                 - Username/Password/Email
             - Verification of account/email
                 - Account becomes "active"
-            - Retrival of account information
+            - Retrieval of account information
             - Deletion of account
             - Reset password of account
 
@@ -120,5 +120,3 @@ Data Structures
 
     - HANDS
         - Data around all the actions
-
-    

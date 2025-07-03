@@ -15,7 +15,9 @@
     },
     /** Spell-check dictionary additions */
     "cSpell.words": [
+        "buyin",
         "donk",
-        "Donkhouse"
+        "Donkhouse",
+        "preflop"
     ],
 }
