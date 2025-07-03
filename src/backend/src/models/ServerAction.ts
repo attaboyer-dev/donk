@@ -1,11 +1,11 @@
+import { ServerEvent } from "@donk/utils";
+
 export default class ServerAction {
-  source: any;
-  type: any;
+  type: ServerEvent;
   update: any;
   nextState: any;
 
-  constructor(type: any, update: any, nextState: any) {
-    this.source = "SERVER";
+  constructor(type: ServerEvent, update: any, nextState: any) {
     this.type = type;
     this.update = update;
     this.nextState = nextState;
