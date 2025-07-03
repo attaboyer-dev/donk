@@ -7,9 +7,15 @@
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "skipLibCheck": true
-  },
-  "paths": {
-    "@donk/utils": ["src/utils/src"]
+    "skipLibCheck": true,
+    "composite": true,
+    "paths": {
+      "@donk/utils": [
+        "src/utils/src"
+      ],
+      "@donk/backend": [
+        "src/backend/src"
+      ]
+    }
   }
 }
