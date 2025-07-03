@@ -89,7 +89,7 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
     const prevName = player.name;
     player.name = userAction.value;
     const tableDetails = new ServerAction(
-      "RENAME",
+      ServerEvent.Rename,
       { prevName, nextName: player.name },
       { players: table.players },
     );
@@ -149,7 +149,7 @@ wss.on("connection", (wsc: IdentifyableWebSocket) => {
     console.log("Client closed");
     table.removePlayer(wsc);
     const playerLeft = new ServerAction(
-      "USER_LEFT",
+      ServerEvent.UserLeft,
       { name: wsc.name },
       { players: table.players },
     );
@@ -165,7 +165,7 @@ wss.on("connection", (wsc: IdentifyableWebSocket) => {
     const client = _client as IdentifyableWebSocket;
     if (client.readyState === WebSocket.OPEN && wsc.id !== wsc.id) {
       const userJoined = new ServerAction(
-        "USER_JOINED",
+        ServerEvent.UserJoined,
         { name: wsc.name },
         { players: table.players },
       );
@@ -175,12 +175,12 @@ wss.on("connection", (wsc: IdentifyableWebSocket) => {
 
   const { players: _, ...tableNoPlayers } = table;
   const tableDetails = new ServerAction(
-    "TABLE_STATE",
+    ServerEvent.TableState,
     { table: tableNoPlayers },
     { players: table.players },
   );
   const userDetails = new ServerAction(
-    "USER_INFO",
+    ServerEvent.UserInfo,
     { state: clientAsPlayer },
     { players: table.players },
   );

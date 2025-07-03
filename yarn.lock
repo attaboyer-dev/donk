@@ -41,7 +41,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@donk/backend@workspace:src/backend"
   dependencies:
-    "@donk/utils": "npm:*"
+    "@donk/utils": "workspace:^"
     cors: "npm:^2.8.5"
     express: "npm:^4.18.1"
     nodemon: "npm:^2.0.19"
@@ -67,7 +67,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@donk/utils@npm:*, @donk/utils@workspace:src/utils":
+"@donk/utils@npm:*, @donk/utils@workspace:^, @donk/utils@workspace:src/utils":
   version: 0.0.0-use.local
   resolution: "@donk/utils@workspace:src/utils"
   dependencies:

@@ -8,20 +8,20 @@ ws.onopen = (e) => console.log("WebSocket open");
 let messageEventListener = (e) => console.log(JSON.parse(e.data));
 ws.addEventListener("message", messageEventListener);
 
-const foldMessage = () => ({ type: "FOLD" });
-const checkMessage = () => ({ type: "CHECK" });
-const callMessage = () => ({ type: "CALL" });
-const raiseMessage = (amount) => ({ type: "RAISE", val: amount });
-const showMessage = () => ({ type: "SHOW" });
-const sitMessage = (num) => ({ type: "SIT", val: num });
-const standMessage = (num) => ({ type: "STAND", val: num });
-const buyInMessage = (amount) => ({ type: "BUYIN", val: amount });
-const leaveMessage = () => ({ type: "LEAVE" });
-const joinMessage = () => ({ type: "JOIN" });
-const renameMessage = (name) => ({ type: "RENAME", val: name });
-const readyMessage = () => ({ type: "READY" });
+const foldMessage = () => ({ type: UserEvent.Fold });
+const checkMessage = () => ({ type: UserEvent.Check });
+const callMessage = () => ({ type: UserEvent.Call });
+const raiseMessage = (amount) => ({ type: UserEvent.Raise, val: amount });
+const showMessage = () => ({ type: UserEvent.Show });
+const sitMessage = (num) => ({ type: UserEvent.Sit, val: num });
+const standMessage = (num) => ({ type: UserEvent.Stand, val: num });
+const buyInMessage = (amount) => ({ type: UserEvent.BuyIn, val: amount });
+const leaveMessage = () => ({ type: UserEvent.Leave });
+const joinMessage = () => ({ type: UserEvent.Join });
+const renameMessage = (name) => ({ type: UserEvent.Rename, val: name });
+const readyMessage = () => ({ type: UserEvent.Ready });
 
-const sendWSMessage = (action, val) => {
+const sendWSMessage = (action: UserEvent, val: any) => {
   let message = "";
   if (action === UserEvent.Fold) {
     message = JSON.stringify(foldMessage());
@@ -113,7 +113,7 @@ const GameBoard = () => {
     setInputValue(event.target.value);
   };
 
-  const [actionValue, setActionValue] = React.useState("READY");
+  const [actionValue, setActionValue] = React.useState(UserEvent.Ready);
   const onActionChangeHandler = (event) => {
     setActionValue(event.target.value);
   };
@@ -130,7 +130,7 @@ const GameBoard = () => {
     9: {},
   };
 
-  const [tableValue, setTableValue] = React.useState({});
+  const [tableValue, setTableValue] = React.useState<any>({});
   const [seatsValue, setSeatsValue] = React.useState<any>(emptySeats);
   const [playersValue, setPlayersValue] = React.useState([]);
   const [actionLogValue, setActionLogValue] = React.useState([]);
@@ -173,7 +173,6 @@ const GameBoard = () => {
   onRenameHandler = (event) => {
     const { prevName, nextName } = event.update;
     if (userValue.name === prevName) {
-      let test = { ...userValue, name: nextName };
       setUserValue({ ...userValue, name: nextName });
     }
   };
@@ -215,10 +214,10 @@ const GameBoard = () => {
           <div key={key}>
             Seat {key}: {value.name ? `Name: (${value.name}) ` : " "}
             {value.isSitting ? `Stack: (${value.stack}) ` : " "}
-            <button hidden={canStand(value)} disabled={isDisabled(value)} onClick={() => sendWSMessage("SIT", key)}>
+            <button hidden={canStand(value)} disabled={isDisabled(value)} onClick={() => sendWSMessage(UserEvent.Sit, key)}>
               Sit
             </button>
-            <button hidden={!canStand(value)} disabled={!canStand(value)} onClick={() => sendWSMessage("STAND", key)}>
+            <button hidden={!canStand(value)} disabled={!canStand(value)} onClick={() => sendWSMessage(UserEvent.Stand, key)}>
               Stand
             </button>
           </div>
