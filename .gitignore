@@ -8,3 +8,6 @@
 **/.next/
 .DS_Store
 .yarn/install-state.gz
+
+# nvm
+package.json
