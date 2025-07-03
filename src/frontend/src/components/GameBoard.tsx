@@ -1,12 +1,5 @@
-import { ServerEvent, UserEvent } from "@donk/utils";
-import React from "react";
-
-const ws = new WebSocket("ws://localhost:3032");
-ws.onopen = (e) => console.log("WebSocket open");
-
-// Should only be doing in dev
-let messageEventListener = (e) => console.log(JSON.parse(e.data));
-ws.addEventListener("message", messageEventListener);
+import { ServerEvent, UserEvent, Player } from "@donk/utils";
+import React, { useEffect } from "react";
 
 const foldMessage = () => ({ type: UserEvent.Fold });
 const checkMessage = () => ({ type: UserEvent.Check });
@@ -21,7 +14,11 @@ const joinMessage = () => ({ type: UserEvent.Join });
 const renameMessage = (name) => ({ type: UserEvent.Rename, val: name });
 const readyMessage = () => ({ type: UserEvent.Ready });
 
+let ws = null;
+
 const sendWSMessage = (action: UserEvent, val: any) => {
+  if (!ws) return;
+  
   let message = "";
   if (action === UserEvent.Fold) {
     message = JSON.stringify(foldMessage());
@@ -88,24 +85,28 @@ let onRenameHandler = (event: any) => {};
 let onEventLogHandler = (event: any) => {};
 let onNextStateHandler = (event: any) => {};
 
-ws.addEventListener(
-  "message",
-  (messageEventListener = (event) => {
-    let eventJSON = JSON.parse(event.data);
-    if (eventJSON.type === ServerEvent.TableState) {
-      onTableUpdateHandler(eventJSON);
-    } else if (eventJSON.type === ServerEvent.UserInfo) {
-      onUserUpdateHandler(eventJSON);
-    } else if (eventJSON.type === ServerEvent.PlayerSat) {
-      onPlayerSatHandler(eventJSON);
-    } else if (eventJSON.type === ServerEvent.Rename) {
-      onRenameHandler(eventJSON);
-    }
+const setupWebSocketListeners = () => {
+  if (!ws) return;
+  
+  ws.addEventListener(
+    "message",
+    (event) => {
+      let eventJSON = JSON.parse(event.data);
+      console.log('server message: %o', eventJSON)
+      if (eventJSON.type === ServerEvent.TableState) {
+        onTableUpdateHandler(eventJSON);
+      } else if (eventJSON.type === ServerEvent.UserInfo) {
+        onUserUpdateHandler(eventJSON);
+      } else if (eventJSON.type === ServerEvent.PlayerSat) {
+        onPlayerSatHandler(eventJSON);
+      } else if (eventJSON.type === ServerEvent.Rename) {
+        onRenameHandler(eventJSON);
+      }
 
-    onNextStateHandler(eventJSON);
-    onEventLogHandler(eventJSON);
-  }),
-);
+      onNextStateHandler(eventJSON);
+      onEventLogHandler(eventJSON);
+    });
+};
 
 const GameBoard = () => {
   const [inputValue, setInputValue] = React.useState("");
@@ -118,22 +119,35 @@ const GameBoard = () => {
     setActionValue(event.target.value);
   };
 
-  const emptySeats = {
-    1: {},
-    2: {},
-    3: {},
-    4: {},
-    5: {},
-    6: {},
-    7: {},
-    8: {},
-    9: {},
+  const emptySeats: { [key: number]: Player } = {
+    1: {} as Player,
+    2: {} as Player,
+    3: {} as Player,
+    4: {} as Player,
+    5: {} as Player,
+    6: {} as Player,
+    7: {} as Player,
+    8: {} as Player,
+    9: {} as Player,
   };
 
   const [tableValue, setTableValue] = React.useState<any>({});
-  const [seatsValue, setSeatsValue] = React.useState<any>(emptySeats);
+  const [seatsValue, setSeatsValue] = React.useState<{ [key: number]: Player }>(emptySeats);
   const [playersValue, setPlayersValue] = React.useState([]);
   const [actionLogValue, setActionLogValue] = React.useState([]);
+
+  useEffect(() => {
+    ws = new WebSocket("ws://localhost:3032");
+    ws.onopen = () => console.log("WebSocket open");
+    setupWebSocketListeners();
+
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, []);
+  
   onTableUpdateHandler = (event) => {
     setTableValue(event.update.table);
   };
@@ -227,7 +241,6 @@ const GameBoard = () => {
     );
   };
 
-  //console.log('Table Value:', tableValue);
   return (
     <div className="App">
       <header className="App-header">

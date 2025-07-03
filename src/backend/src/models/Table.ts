@@ -1,5 +1,5 @@
-import { IdentifyableWebSocket } from "./IdentifyableWebSocket.js";
-import Player from "./Player.js";
+import { IdentifyableWebSocket } from "./IdentifyableWebSocket";
+import Player from "./Player";
 import { GameType } from "@donk/utils";
 
 export default class Table {
@@ -10,7 +10,7 @@ export default class Table {
   minBuyIn: number;
   maxBuyIn: number;
   gameType: GameType;
-  players: Array<any>;
+  players: Array<Player>;
 
   constructor() {
     this.id = 1; // Unique ID of the table

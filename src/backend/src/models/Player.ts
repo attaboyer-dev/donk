@@ -1,5 +1,4 @@
 import { IdentifyableWebSocket } from "./IdentifyableWebSocket";
-import { User } from "./User";
 
 export default class Player {
   id: any;
