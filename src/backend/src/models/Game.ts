@@ -1,28 +1,16 @@
 import { IdentifyableWebSocket } from "./IdentifyableWebSocket";
 import Player from "./Player";
-import { GameType } from "@donk/utils";
+import { GameType, Table } from "@donk/utils";
 
-export default class Table {
-  id: number;
-  name: string;
-  sbSize: number;
-  bbSize: number;
-  minBuyIn: number;
-  maxBuyIn: number;
+export default class Game {
+  table: Table;
   gameType: GameType;
   players: Array<Player>;
 
-  constructor() {
-    this.id = 1; // Unique ID of the table
-    this.name = "The Table"; // Name of the table
-    this.sbSize = 0.1; // Small blind of the table
-    this.bbSize = 0.2; // Big blind of the table
-    this.minBuyIn = 2; // Minimum buy-in amount allowed
-    this.maxBuyIn = 20; // Maximum buy-in amount allowed
+  constructor(table: Table) {
+    this.table = table;            // Table specific details
     this.gameType = GameType.NLHE; // Game Type of the table
-    this.players = []; // Active players at the table
-
-    // this.owner_player_id = -1; // Unique Player ID of the Table Owner
+    this.players = [];             // Active players at the table
   }
 
   /*
@@ -65,7 +53,6 @@ export default class Table {
   };
 
   isAllReady = () => {
-    let toReturn = true;
     let satAndReady = this.players.every((player) => {
       if (player.isSitting && !player.isReady) {
         return false;
@@ -78,7 +65,7 @@ export default class Table {
   };
 
   // TODO: Figure out how we're going to actually start the game
-  startGame = () => {
+  start = () => {
     return false;
   };
 }

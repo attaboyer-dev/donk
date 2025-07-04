@@ -3,11 +3,11 @@ import WebSocket, { WebSocketServer } from "ws";
 
 import ServerAction from "./models/ServerAction";
 import UserAction from "./models/UserAction";
-import TableInit from "./models/Table";
-import { ServerEvent, UserEvent } from "@donk/utils";
+import { ServerEvent, Table, UserEvent } from "@donk/utils";
 import { User } from "./models/User";
 import { IdentifyableWebSocket } from "./models/IdentifyableWebSocket";
 import { createUuid } from "./utils/helpers";
+import Game from "./models/Game";
 
 const database: any = {
   GAME: [],
@@ -23,17 +23,24 @@ const database: any = {
     { id: 9, name: "Valerie" } as User,
     { id: 10, name: "Valerie" } as User,
   ],
-  TABLE: [new TableInit()],
+  TABLE: [{
+    id: 1,
+    name: "God's Table",
+    sbSize: 0.1,
+    bbSize: 0.2,
+    minBuyIn: 5,
+    maxBuyIn: 20,
+  } as Table],
 };
 
-const app = express();
+express();
 const wss = new WebSocketServer({ port: 3032 });
 
-const table = new TableInit();
+const game = new Game(database.TABLE[0]);
 
 // TODO: Include validation for each of the actions.
 const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
-  const player = table.getPlayer(wsc.id);
+  const player = game.getPlayer(wsc.id);
   if (userAction.type === UserEvent.Fold) {
     // TODO: Gameplay action
   } else if (userAction.type === UserEvent.Check) {
@@ -51,7 +58,7 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
     const tableDetails = new ServerAction(
       ServerEvent.PlayerSat,
       { location: player.assignedSeat, name: player.name },
-      { players: table.players },
+      { players: game.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
@@ -63,7 +70,7 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
     const tableDetails = new ServerAction(
       ServerEvent.PlayerStood,
       { location: userAction.value, name: player.name },
-      { players: table.players },
+      { players: game.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
@@ -74,7 +81,7 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
     const tableDetails = new ServerAction(
       ServerEvent.PlayerBuyin,
       { name: player.name, amount: userAction.value },
-      { players: table.players },
+      { players: game.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
@@ -91,7 +98,7 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
     const tableDetails = new ServerAction(
       ServerEvent.Rename,
       { prevName, nextName: player.name },
-      { players: table.players },
+      { players: game.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
@@ -102,14 +109,14 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
     const tableDetails = new ServerAction(
       ServerEvent.Ready,
       { name: player.name },
-      { players: table.players },
+      { players: game.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(tableDetails));
     });
     // If 3+ players, and all the players sitting are ready start the game!
-    if (table.isAllReady()) {
-      table.startGame();
+    if (game.isAllReady()) {
+      game.start();
     }
   } else {
     console.log("Unexpected event");
@@ -118,28 +125,22 @@ const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
 
 // Client connects to the Table
 wss.on("connection", (wsc: IdentifyableWebSocket) => {
-  console.log("Attempting new client connection");
-  // Create ID and add player to table and associated WebSocket client
+  console.log("Processing new client connection");
   wsc.id = createUuid();
-  const clientAsPlayer = table.addPlayer(wsc);
-
-  // TODO: Figure out an authentication workflow for
+  wsc.name = wsc.id;
+  const clientAsPlayer = game.addPlayer(wsc);
 
   // If the player couldn't be created, end
   if (!clientAsPlayer) {
-    console.log("Rejecting connection attempt. Closing");
+    console.log("Unable to create player from incoming connection. Closing");
     wsc.close();
     return;
   }
 
-  // Set player info on the client connection
-  wsc.id = clientAsPlayer.id;
-  wsc.name = clientAsPlayer.name;
-
   // Handle the logic for receiving new messages from clients
   wsc.on("message", (data) => {
     const userAction = new UserAction(wsc.name, data);
-    console.log("User ID - %s - triggering %s", wsc.id, userAction);
+    console.log("User ID - %s - triggering %s", wsc.name, userAction);
     // All these actions will require updating backend state (client object, server state, etc.)
     handleAndValidateAction(userAction, wsc);
   });
@@ -147,11 +148,11 @@ wss.on("connection", (wsc: IdentifyableWebSocket) => {
   // Handle the logic for connections to the client being closed
   wsc.on("close", () => {
     console.log("Client closed");
-    table.removePlayer(wsc);
+    game.removePlayer(wsc);
     const playerLeft = new ServerAction(
       ServerEvent.UserLeft,
       { name: wsc.name },
-      { players: table.players },
+      { players: game.players },
     );
     wss.clients.forEach((client) => {
       client.send(JSON.stringify(playerLeft));
@@ -167,31 +168,25 @@ wss.on("connection", (wsc: IdentifyableWebSocket) => {
       const userJoined = new ServerAction(
         ServerEvent.UserJoined,
         { name: wsc.name },
-        { players: table.players },
+        { players: game.players },
       );
       client.send(JSON.stringify(userJoined));
     }
   });
 
-  const { players: _, ...tableNoPlayers } = table;
+  const { table, players } = game;
   const tableDetails = new ServerAction(
     ServerEvent.TableState,
-    { table: tableNoPlayers },
-    { players: table.players },
+    { table },
+    { players },
   );
   const userDetails = new ServerAction(
     ServerEvent.UserInfo,
     { state: clientAsPlayer },
-    { players: table.players },
+    { players: game.players },
   );
   wsc.send(JSON.stringify(tableDetails));
   wsc.send(JSON.stringify(userDetails));
   console.log("New client connection attempt succeeded");
   console.log("Client Count:", wss.clients.size);
 });
-
-// app.use(cors());
-
-// app.listen(port, () => {
-//   console.log(`Donkhouse 0.1 listening on port ${port}`)
-// });
