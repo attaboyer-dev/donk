@@ -6,7 +6,7 @@
 // Player 2 sits at seat 8  (server call)
 // Player 3 sits at seat 1  (server call)
 // Player 1 buys in for 40  (server call)
-// Plyaer 2 buys in for 35  (server call)
+// Player 2 buys in for 35  (server call)
 // Player 3 buys in for 50  (server call)
 // PLayer 1 sits
 // PLayer 2 sits

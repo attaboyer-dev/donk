@@ -1,7 +1,7 @@
+# Misc
 *.tsbuildinfo
 **/node_modules/
 **/dist/
 **/.next/
 .DS_Store
 .yarn/install-state.gz
-

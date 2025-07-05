@@ -1,12 +1,36 @@
-## A poker app
+# Donkhouse 2.0
+The greatest poker application ever created.
 
-# Local install
+## Local install
 
-- Install open-source package manager: `brew` (https://brew.sh/)
-- Install node version manager: `brew install nvm` 
-- Install javascript package manager: `corepack enable; yarn` 
+### MacOS
+1. Install open-source package manager [brew](https://brew.sh/).
+1. Install node version manager and javascript package manager:
+    ``` bash
+    $ brew install nvm
+    $ corepack enable; yarn
+    ```
 
-# Build and deploy locally
-- Build: `yarn build`
-- Run backend: `yarn be`
-- Run frontend: `yarn fe`
+### Windows
+1. Install open-source package manager [Scoop](https://scoop.sh/).
+1. Run the following commands after installation:
+    ``` powershell
+    $ scoop install nvm
+    $ scoop install nodejs
+    $ scoop install yarn
+
+    $ corepack enable; yarn # Installs javascript package manager
+    ```
+1. Restart Powershell to load environment variables, and confirm all components are installed successfully:
+    ``` powershell
+    $ nvm -v
+    $ node -v
+    $ yarn -v
+    ```
+
+## Build and deploy locally
+``` bash
+$ yarn build
+$ yarn be # backend
+$ yarn fe # frontend
+```
