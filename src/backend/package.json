@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon dist/app.js"
+    "dev": "nodemon --exec ts-node src/app.ts"
   },
   "dependencies": {
     "@donk/utils": "workspace:^",
@@ -14,6 +14,7 @@
     "ws": "^8.8.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "nodemon": "^2.0.19",
+    "ts-node": "^10.9.2"
   }
 }

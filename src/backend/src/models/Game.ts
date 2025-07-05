@@ -3,14 +3,16 @@ import Player from "./Player";
 import { GameType, Table } from "@donk/utils";
 
 export default class Game {
+  id: number;
   table: Table;
   gameType: GameType;
   players: Array<Player>;
 
   constructor(table: Table) {
-    this.table = table;            // Table specific details
+    this.id = 1;
+    this.table = table; // Table specific details
     this.gameType = GameType.NLHE; // Game Type of the table
-    this.players = [];             // Active players at the table
+    this.players = []; // Active players at the table
   }
 
   /*

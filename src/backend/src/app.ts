@@ -23,20 +23,23 @@ const database: any = {
     { id: 9, name: "Valerie" } as User,
     { id: 10, name: "Valerie" } as User,
   ],
-  TABLE: [{
-    id: 1,
-    name: "God's Table",
-    sbSize: 0.1,
-    bbSize: 0.2,
-    minBuyIn: 5,
-    maxBuyIn: 20,
-  } as Table],
+  TABLE: [
+    {
+      id: 1,
+      name: "God's Table 3",
+      sbSize: 0.1,
+      bbSize: 0.2,
+      minBuyIn: 5,
+      maxBuyIn: 20,
+    } as Table,
+  ],
 };
+database.GAME.push(new Game(database.TABLE[0]));
 
 express();
 const wss = new WebSocketServer({ port: 3032 });
 
-const game = new Game(database.TABLE[0]);
+const game = database.GAME[0];
 
 // TODO: Include validation for each of the actions.
 const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
