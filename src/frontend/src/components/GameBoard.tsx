@@ -10,15 +10,18 @@ import {
   Typography,
   Paper,
   IconButton,
-  Divider,
   Stack,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Drawer,
+  Toolbar,
+  Divider,
 } from "@mui/material";
-import { Info } from "@mui/icons-material";
+import { Info, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import React, { useEffect } from "react";
+import ActionLog from "./ActionLog";
 
 const foldMessage = () => ({ type: UserEvent.Fold });
 const checkMessage = () => ({ type: UserEvent.Check });
@@ -140,6 +143,9 @@ const GameBoard = () => {
   const handleInfoOpen = () => setInfoDialogOpen(true);
   const handleInfoClose = () => setInfoDialogOpen(false);
 
+  const [actionLogOpen, setActionLogOpen] = React.useState(true);
+  const handleToggleActionLog = () => setActionLogOpen(!actionLogOpen);
+
   const emptySeats: { [key: number]: Player } = {
     1: {} as Player,
     2: {} as Player,
@@ -221,14 +227,35 @@ const GameBoard = () => {
     setInputValue("");
   };
 
-  // Render all the logs of actions taken
-  const renderLogs = () => (
-    <ol>
-      {actionLogValue.map((log, i) => (
-        <li key={i}>{log}</li>
-      ))}
-    </ol>
-  );
+  // Calculate seat position in oval layout
+  const calculateSeatPosition = (seatIndex: number, totalSeats: number) => {
+    // Define custom angles for each seat to create more space between specific seats
+    const customAngles = {
+      1: 0,
+      2: 35,
+      3: 80,
+      4: 135,
+      5: 165,
+      6: 195,
+      7: 225,
+      8: 280,
+      9: 325,
+    };
+
+    const angleInDegrees = customAngles[seatIndex] || ((seatIndex - 1) * 360) / totalSeats;
+    const angle = (angleInDegrees * Math.PI) / 180 - Math.PI / 2;
+
+    const radiusX = 40; // percentage of container width
+    const radiusY = 30; // percentage of container height
+    const centerX = 50;
+    const centerY = 50;
+
+    return {
+      x: centerX + radiusX * Math.cos(angle),
+      y: centerY + radiusY * Math.sin(angle),
+      rotation: angle * (180 / Math.PI) + 90,
+    };
+  };
 
   // Render all the individual player seats
   const renderSeats = () => {
@@ -242,62 +269,293 @@ const GameBoard = () => {
       return toReturn;
     };
     const canStand = (personInSeat) => userValue && userValue.assignedSeat === personInSeat.assignedSeat;
+
+    const totalSeats = Object.keys(seatsValue).length;
+
     return (
-      <div>
-        <p />
-        {Object.entries(seatsValue).map(([key, value]) => (
-          <div key={key}>
-            Seat {key}: {value.name ? `Name: (${value.name}) ` : " "}
-            {value.isSitting ? `Stack: (${value.stack}) ` : " "}
-            <Button
-              variant="contained"
-              size="small"
-              sx={{ display: canStand(value) ? "none" : "inline-flex", mr: 1 }}
-              disabled={isDisabled(value)}
-              onClick={() => sendWSMessage(UserEvent.Sit, key)}
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          height: { xs: "50vh", sm: "60vh", md: "70vh" },
+          minHeight: "400px",
+          maxHeight: "800px",
+          margin: "0 auto",
+          background: "linear-gradient(135deg, #0f4c3a 0%, #1a6b4d 100%)",
+          borderRadius: "50%",
+          border: "8px solid #8b4513",
+          boxShadow: "inset 0 0 50px rgba(0,0,0,0.3), 0 0 30px rgba(0,0,0,0.5)",
+          overflow: "visible",
+        }}
+      >
+        {/* Poker table center */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "30%",
+            height: "20%",
+            background: "#1a6b4d",
+            borderRadius: "50%",
+            border: "2px solid rgb(205, 196, 190)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "inset 0 0 20px rgba(0,0,0,0.3)",
+          }}
+        ></Box>
+
+        {/* Render seats around the oval */}
+        {Object.entries(seatsValue).map(([key, value]) => {
+          const seatNum = parseInt(key);
+          const position = calculateSeatPosition(seatNum, totalSeats);
+
+          return (
+            <Box
+              key={key}
+              sx={{
+                position: "absolute",
+                left: `${position.x}%`,
+                top: `${position.y}%`,
+                transform: "translate(-50%, -50%)",
+                minWidth: { xs: "80px", sm: "100px", md: "120px" },
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1,
+              }}
             >
-              Sit
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ display: !canStand(value) ? "none" : "inline-flex" }}
-              disabled={!canStand(value)}
-              onClick={() => sendWSMessage(UserEvent.Stand, key)}
-            >
-              Stand
-            </Button>
-          </div>
-        ))}
-        <p />
-      </div>
+              {/* Seat indicator */}
+              <Box
+                sx={{
+                  width: { xs: "60px", sm: "80px" },
+                  height: { xs: "60px", sm: "80px" },
+                  borderRadius: "50%",
+                  background: value.isSitting
+                    ? "linear-gradient(135deg, #4a90e2 0%, #357abd 100%)"
+                    : "linear-gradient(135deg, #666 0%, #333 100%)",
+                  border: `3px solid ${value.isSitting ? "#2c5aa0" : "#555"}`,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "white",
+                    fontWeight: "bold",
+                    fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
+                  }}
+                >
+                  {seatNum}
+                </Typography>
+                {value.name && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "white",
+                      fontSize: { xs: "0.5rem", sm: "0.6rem", md: "0.7rem" },
+                      textAlign: "center",
+                      maxWidth: "80px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {value.name}
+                  </Typography>
+                )}
+              </Box>
+
+              {/* Stack display */}
+              {value.isSitting && value.stack && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "white",
+                    background: "rgba(0,0,0,0.7)",
+                    padding: "2px 6px",
+                    borderRadius: "10px",
+                    fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
+                  }}
+                >
+                  ${value.stack}
+                </Typography>
+              )}
+
+              {/* Action buttons */}
+              <Box sx={{ display: "flex", gap: 0.5 }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    display: canStand(value) ? "none" : "inline-flex",
+                    fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
+                    minWidth: { xs: "40px", sm: "50px", md: "60px" },
+                    height: { xs: "24px", sm: "28px", md: "32px" },
+                  }}
+                  disabled={isDisabled(value)}
+                  onClick={() => sendWSMessage(UserEvent.Sit, key)}
+                >
+                  Sit
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    display: !canStand(value) ? "none" : "inline-flex",
+                    fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
+                    minWidth: { xs: "40px", sm: "50px", md: "60px" },
+                    height: { xs: "24px", sm: "28px", md: "32px" },
+                    color: "white",
+                    borderColor: "white",
+                  }}
+                  disabled={!canStand(value)}
+                  onClick={() => sendWSMessage(UserEvent.Stand, key)}
+                >
+                  Stand
+                </Button>
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
     );
   };
 
-  return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <IconButton onClick={handleInfoOpen}>
-          <Info />
-        </IconButton>
-      </Box>
-      {renderSeats()}
+  const drawerWidth = 300;
 
-      <Paper
-        elevation={3}
+  return (
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        background: "#2c3e50",
+      }}
+    >
+      {/* Action Log Drawer */}
+      <Drawer
+        variant="persistent"
+        anchor="left"
+        open={actionLogOpen}
         sx={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "200px",
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            background: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(10px)",
+          },
         }}
       >
-        <Stack spacing={2} sx={{ mb: 2 }}>
-          <Stack direction="row" spacing={2} alignItems="center">
+        <Toolbar
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 2,
+          }}
+        >
+          <Typography variant="h6">
+            Action Log
+          </Typography>
+          <IconButton onClick={handleToggleActionLog}>
+            <ChevronLeft />
+          </IconButton>
+        </Toolbar>
+        <Divider />
+        <Box sx={{ flex: 1, overflow: "hidden" }}>
+          <ActionLog logs={actionLogValue} />
+        </Box>
+      </Drawer>
+
+      {/* Toggle Button for when drawer is closed */}
+      {!actionLogOpen && (
+        <Box
+          sx={{
+            position: "fixed",
+            left: 0,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 1000,
+          }}
+        >
+          <IconButton
+            onClick={handleToggleActionLog}
+            sx={{
+              background: "rgba(255,255,255,0.9)",
+              color: "#2c3e50",
+              "&:hover": {
+                background: "rgba(255,255,255,1)",
+              },
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            }}
+          >
+            <ChevronRight />
+          </IconButton>
+        </Box>
+      )}
+
+      {/* Main Content */}
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          ml: actionLogOpen ? 0 : 0,
+          transition: "margin-left 0.3s ease",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            p: 0,
+            background: "#2c3e50",
+          }}
+        >
+          <IconButton onClick={handleInfoOpen} sx={{ color: "white" }}>
+            <Info />
+          </IconButton>
+        </Box>
+
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            pb: { xs: "120px", sm: "120px", md: "120px" }, // Account for fixed bottom panel
+          }}
+        >
+          {renderSeats()}
+        </Box>
+
+        <Paper
+          elevation={3}
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            left: actionLogOpen ? drawerWidth : 0,
+            right: 0,
+            height: "100px",
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            background: "rgba(255,255,255,0.95)",
+            backdropFilter: "blur(10px)",
+            borderTop: "1px solid rgba(255,255,255,0.2)",
+            transition: "left 0.3s ease",
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ width: "100%" }}>
             <TextField
               label="Value"
               variant="outlined"
@@ -324,33 +582,8 @@ const GameBoard = () => {
               Send
             </Button>
           </Stack>
-        </Stack>
-
-        <Divider sx={{ mb: 1 }} />
-
-        <Typography variant="subtitle2" gutterBottom>
-          Action Log
-        </Typography>
-
-        <Box
-          sx={{
-            flexGrow: 1,
-            overflowY: "auto",
-            border: "1px solid #e0e0e0",
-            borderRadius: 1,
-            p: 1,
-            bgcolor: "grey.50",
-          }}
-        >
-          <Box component="ol" sx={{ m: 0, pl: 2 }}>
-            {actionLogValue.map((log, i) => (
-              <Typography component="li" key={i} variant="body2" sx={{ mb: 0.5 }}>
-                {log}
-              </Typography>
-            ))}
-          </Box>
-        </Box>
-      </Paper>
+        </Paper>
+      </Box>
 
       <Dialog open={infoDialogOpen} onClose={handleInfoClose} maxWidth="sm" fullWidth>
         <DialogTitle>Table Information</DialogTitle>
