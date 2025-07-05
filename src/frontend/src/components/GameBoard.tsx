@@ -1,14 +1,8 @@
 import { ServerEvent, UserEvent, Player } from "@donk/utils";
 import {
   Box,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Button,
   Typography,
-  Paper,
   IconButton,
   Stack,
   Dialog,
@@ -19,7 +13,7 @@ import {
   Toolbar,
   Divider,
 } from "@mui/material";
-import { Info, ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import ActionLog from "./ActionLog";
 import ActionBox from "./ActionBox";
@@ -232,7 +226,7 @@ const GameBoard = () => {
     const angle = (angleInDegrees * Math.PI) / 180 - Math.PI / 2;
 
     const radiusX = 40; // percentage of container width
-    const radiusY = 30; // percentage of container height
+    const radiusY = 33; // percentage of container height
     const centerX = 50;
     const centerY = 50;
 
@@ -281,8 +275,8 @@ const GameBoard = () => {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: "30%",
-            height: "20%",
+            width: "40%",
+            height: "30%",
             background: "#1a6b4d",
             borderRadius: "50%",
             border: "2px solid rgb(205, 196, 190)",
@@ -316,31 +310,20 @@ const GameBoard = () => {
               {/* Seat indicator */}
               <Box
                 sx={{
-                  width: { xs: "60px", sm: "80px" },
-                  height: { xs: "60px", sm: "80px" },
-                  borderRadius: "50%",
-                  background: value.isSitting
-                    ? "linear-gradient(135deg, #4a90e2 0%, #357abd 100%)"
-                    : "linear-gradient(135deg, #666 0%, #333 100%)",
-                  border: `3px solid ${value.isSitting ? "#2c5aa0" : "#555"}`,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-                  transition: "all 0.3s ease",
                 }}
               >
-                <Typography
-                  variant="caption"
+                <Person
                   sx={{
-                    color: "white",
-                    fontWeight: "bold",
-                    fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
+                    fontSize: { xs: "48px", sm: "64px", md: "80px" },
+                    color: value.isSitting ? "#4a90e2" : "#BBB",
+                    filter: value.isSitting ? "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" : "none",
+                    transition: "all 0.3s ease",
                   }}
-                >
-                  {seatNum}
-                </Typography>
+                />
                 {value.name && (
                   <Typography
                     variant="caption"
@@ -352,6 +335,7 @@ const GameBoard = () => {
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
+                      mt: -0.5,
                     }}
                   >
                     {value.name}
