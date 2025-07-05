@@ -1,4 +1,23 @@
 import { ServerEvent, UserEvent, Player } from "@donk/utils";
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Button,
+  Typography,
+  Paper,
+  IconButton,
+  Divider,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
+import { Info } from "@mui/icons-material";
 import React, { useEffect } from "react";
 
 const foldMessage = () => ({ type: UserEvent.Fold });
@@ -18,7 +37,7 @@ let ws = null;
 
 const sendWSMessage = (action: UserEvent, val: any) => {
   if (!ws) return;
-  
+
   let message = "";
   if (action === UserEvent.Fold) {
     message = JSON.stringify(foldMessage());
@@ -87,25 +106,23 @@ let onNextStateHandler = (event: any) => {};
 
 const setupWebSocketListeners = () => {
   if (!ws) return;
-  
-  ws.addEventListener(
-    "message",
-    (event) => {
-      let eventJSON = JSON.parse(event.data);
-      console.log('server message: %o', eventJSON)
-      if (eventJSON.type === ServerEvent.TableState) {
-        onTableUpdateHandler(eventJSON);
-      } else if (eventJSON.type === ServerEvent.UserInfo) {
-        onUserUpdateHandler(eventJSON);
-      } else if (eventJSON.type === ServerEvent.PlayerSat) {
-        onPlayerSatHandler(eventJSON);
-      } else if (eventJSON.type === ServerEvent.Rename) {
-        onRenameHandler(eventJSON);
-      }
 
-      onNextStateHandler(eventJSON);
-      onEventLogHandler(eventJSON);
-    });
+  ws.addEventListener("message", (event) => {
+    let eventJSON = JSON.parse(event.data);
+    console.log("server message: %o", eventJSON);
+    if (eventJSON.type === ServerEvent.TableState) {
+      onTableUpdateHandler(eventJSON);
+    } else if (eventJSON.type === ServerEvent.UserInfo) {
+      onUserUpdateHandler(eventJSON);
+    } else if (eventJSON.type === ServerEvent.PlayerSat) {
+      onPlayerSatHandler(eventJSON);
+    } else if (eventJSON.type === ServerEvent.Rename) {
+      onRenameHandler(eventJSON);
+    }
+
+    onNextStateHandler(eventJSON);
+    onEventLogHandler(eventJSON);
+  });
 };
 
 const GameBoard = () => {
@@ -118,6 +135,10 @@ const GameBoard = () => {
   const onActionChangeHandler = (event) => {
     setActionValue(event.target.value);
   };
+
+  const [infoDialogOpen, setInfoDialogOpen] = React.useState(false);
+  const handleInfoOpen = () => setInfoDialogOpen(true);
+  const handleInfoClose = () => setInfoDialogOpen(false);
 
   const emptySeats: { [key: number]: Player } = {
     1: {} as Player,
@@ -147,7 +168,7 @@ const GameBoard = () => {
       }
     };
   }, []);
-  
+
   onTableUpdateHandler = (event) => {
     setTableValue(event.update.table);
   };
@@ -228,12 +249,24 @@ const GameBoard = () => {
           <div key={key}>
             Seat {key}: {value.name ? `Name: (${value.name}) ` : " "}
             {value.isSitting ? `Stack: (${value.stack}) ` : " "}
-            <button hidden={canStand(value)} disabled={isDisabled(value)} onClick={() => sendWSMessage(UserEvent.Sit, key)}>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ display: canStand(value) ? "none" : "inline-flex", mr: 1 }}
+              disabled={isDisabled(value)}
+              onClick={() => sendWSMessage(UserEvent.Sit, key)}
+            >
               Sit
-            </button>
-            <button hidden={!canStand(value)} disabled={!canStand(value)} onClick={() => sendWSMessage(UserEvent.Stand, key)}>
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{ display: !canStand(value) ? "none" : "inline-flex" }}
+              disabled={!canStand(value)}
+              onClick={() => sendWSMessage(UserEvent.Stand, key)}
+            >
               Stand
-            </button>
+            </Button>
           </div>
         ))}
         <p />
@@ -242,50 +275,102 @@ const GameBoard = () => {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <div style={{ textAlign: "left", width: "800px", fontSize: "calc(10px + 1vmin)" }}>
-          <div>
-            <div>Table Name: {tableValue.name}</div>
-            <div>Small Blind Size: {tableValue.sbSize}</div>
-            <div>Big Blind Size: {tableValue.bbSize}</div>
-            <div>Min Buy-In: {tableValue.minBuyIn}</div>
-            <div>Max Buy-In: {tableValue.maxBuyIn}</div>
-            <div>Game Type: {tableValue.gameType}</div>
-          </div>
-          {renderSeats()}
-        </div>
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <IconButton onClick={handleInfoOpen}>
+          <Info />
+        </IconButton>
+      </Box>
+      {renderSeats()}
 
-        <div>
-          <label>Actions: </label>
-          <input onChange={onChangeHandler} value={inputValue} />
-          <select name="Action" onChange={onActionChangeHandler} value={actionValue}>
-            <option value={UserEvent.Ready}>Ready</option>
-            <option value={UserEvent.Fold}>Fold</option>
-            <option value={UserEvent.Check}>Check</option>
-            <option value={UserEvent.Call}>Call</option>
-            <option value={UserEvent.Raise}>Raise</option>
-            <option value={UserEvent.Show}>Show</option>
-            <option value={UserEvent.Stand}>Stand</option>
-            <option value={UserEvent.BuyIn}>Buy In</option>
-            <option value={UserEvent.Rename}>Rename</option>
-          </select>
-        </div>
-        <button onClick={onSend}>Send</button>
-        <p>Action Log:</p>
-        <div
-          style={{
-            textAlign: "left",
-            width: "800px",
-            height: "200px",
-            overflowY: "scroll",
-            fontSize: "calc(10px + 1vmin)",
+      <Paper
+        elevation={3}
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "200px",
+          p: 2,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Stack spacing={2} sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <TextField
+              label="Value"
+              variant="outlined"
+              size="small"
+              value={inputValue}
+              onChange={onChangeHandler}
+              sx={{ minWidth: 120 }}
+            />
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Action</InputLabel>
+              <Select value={actionValue} label="Action" onChange={onActionChangeHandler}>
+                <MenuItem value={UserEvent.Ready}>Ready</MenuItem>
+                <MenuItem value={UserEvent.Fold}>Fold</MenuItem>
+                <MenuItem value={UserEvent.Check}>Check</MenuItem>
+                <MenuItem value={UserEvent.Call}>Call</MenuItem>
+                <MenuItem value={UserEvent.Raise}>Raise</MenuItem>
+                <MenuItem value={UserEvent.Show}>Show</MenuItem>
+                <MenuItem value={UserEvent.Stand}>Stand</MenuItem>
+                <MenuItem value={UserEvent.BuyIn}>Buy In</MenuItem>
+                <MenuItem value={UserEvent.Rename}>Rename</MenuItem>
+              </Select>
+            </FormControl>
+            <Button variant="contained" onClick={onSend}>
+              Send
+            </Button>
+          </Stack>
+        </Stack>
+
+        <Divider sx={{ mb: 1 }} />
+
+        <Typography variant="subtitle2" gutterBottom>
+          Action Log
+        </Typography>
+
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflowY: "auto",
+            border: "1px solid #e0e0e0",
+            borderRadius: 1,
+            p: 1,
+            bgcolor: "grey.50",
           }}
         >
-          {renderLogs()}
-        </div>
-      </header>
-    </div>
+          <Box component="ol" sx={{ m: 0, pl: 2 }}>
+            {actionLogValue.map((log, i) => (
+              <Typography component="li" key={i} variant="body2" sx={{ mb: 0.5 }}>
+                {log}
+              </Typography>
+            ))}
+          </Box>
+        </Box>
+      </Paper>
+
+      <Dialog open={infoDialogOpen} onClose={handleInfoClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Table Information</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2}>
+            <Typography variant="h6" component="div">
+              {tableValue.name}
+            </Typography>
+            <Typography variant="body1">Small Blind: {tableValue.sbSize}</Typography>
+            <Typography variant="body1">Big Blind: {tableValue.bbSize}</Typography>
+            <Typography variant="body1">Min Buy-In: {tableValue.minBuyIn}</Typography>
+            <Typography variant="body1">Max Buy-In: {tableValue.maxBuyIn}</Typography>
+            <Typography variant="body1">Game Type: {tableValue.gameType}</Typography>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleInfoClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
