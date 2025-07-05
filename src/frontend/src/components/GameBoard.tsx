@@ -22,6 +22,7 @@ import {
 import { Info, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import ActionLog from "./ActionLog";
+import ActionBox from "./ActionBox";
 
 const foldMessage = () => ({ type: UserEvent.Fold });
 const checkMessage = () => ({ type: UserEvent.Check });
@@ -129,16 +130,6 @@ const setupWebSocketListeners = () => {
 };
 
 const GameBoard = () => {
-  const [inputValue, setInputValue] = React.useState("");
-  const onChangeHandler = (event) => {
-    setInputValue(event.target.value);
-  };
-
-  const [actionValue, setActionValue] = React.useState(UserEvent.Ready);
-  const onActionChangeHandler = (event) => {
-    setActionValue(event.target.value);
-  };
-
   const [infoDialogOpen, setInfoDialogOpen] = React.useState(false);
   const handleInfoOpen = () => setInfoDialogOpen(true);
   const handleInfoClose = () => setInfoDialogOpen(false);
@@ -220,11 +211,6 @@ const GameBoard = () => {
 
   onEventLogHandler = (event) => {
     setActionLogValue([...actionLogValue, eventToLog(event)]);
-  };
-
-  const onSend = () => {
-    sendWSMessage(actionValue, inputValue);
-    setInputValue("");
   };
 
   // Calculate seat position in oval layout
@@ -429,7 +415,7 @@ const GameBoard = () => {
     );
   };
 
-  const drawerWidth = 300;
+  const drawerWidth = 250;
 
   return (
     <Box
@@ -447,9 +433,9 @@ const GameBoard = () => {
         sx={{
           width: drawerWidth,
           flexShrink: 0,
-          '& .MuiDrawer-paper': {
+          "& .MuiDrawer-paper": {
             width: drawerWidth,
-            boxSizing: 'border-box',
+            boxSizing: "border-box",
             background: "rgba(255,255,255,0.95)",
             backdropFilter: "blur(10px)",
           },
@@ -463,9 +449,7 @@ const GameBoard = () => {
             px: 2,
           }}
         >
-          <Typography variant="h6">
-            Action Log
-          </Typography>
+          <Typography variant="h6">Action Log</Typography>
           <IconButton onClick={handleToggleActionLog}>
             <ChevronLeft />
           </IconButton>
@@ -481,8 +465,8 @@ const GameBoard = () => {
         <Box
           sx={{
             position: "fixed",
-            left: 0,
-            top: "50%",
+            left: 10,
+            top: 100,
             transform: "translateY(-50%)",
             zIndex: 1000,
           }}
@@ -533,56 +517,14 @@ const GameBoard = () => {
             justifyContent: "center",
             alignItems: "center",
             pb: { xs: "120px", sm: "120px", md: "120px" }, // Account for fixed bottom panel
+            transform: !actionLogOpen ? "translateX(-150px)" : "translateX(0)",
+            transition: "transform 0.3s ease",
           }}
         >
           {renderSeats()}
         </Box>
 
-        <Paper
-          elevation={3}
-          sx={{
-            position: "fixed",
-            bottom: 0,
-            left: actionLogOpen ? drawerWidth : 0,
-            right: 0,
-            height: "100px",
-            p: 2,
-            display: "flex",
-            alignItems: "center",
-            background: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(10px)",
-            borderTop: "1px solid rgba(255,255,255,0.2)",
-            transition: "left 0.3s ease",
-          }}
-        >
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ width: "100%" }}>
-            <TextField
-              label="Value"
-              variant="outlined"
-              size="small"
-              value={inputValue}
-              onChange={onChangeHandler}
-              sx={{ minWidth: 120 }}
-            />
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel>Action</InputLabel>
-              <Select value={actionValue} label="Action" onChange={onActionChangeHandler}>
-                <MenuItem value={UserEvent.Ready}>Ready</MenuItem>
-                <MenuItem value={UserEvent.Fold}>Fold</MenuItem>
-                <MenuItem value={UserEvent.Check}>Check</MenuItem>
-                <MenuItem value={UserEvent.Call}>Call</MenuItem>
-                <MenuItem value={UserEvent.Raise}>Raise</MenuItem>
-                <MenuItem value={UserEvent.Show}>Show</MenuItem>
-                <MenuItem value={UserEvent.Stand}>Stand</MenuItem>
-                <MenuItem value={UserEvent.BuyIn}>Buy In</MenuItem>
-                <MenuItem value={UserEvent.Rename}>Rename</MenuItem>
-              </Select>
-            </FormControl>
-            <Button variant="contained" onClick={onSend}>
-              Send
-            </Button>
-          </Stack>
-        </Paper>
+        <ActionBox sendWSMessage={sendWSMessage} />
       </Box>
 
       <Dialog open={infoDialogOpen} onClose={handleInfoClose} maxWidth="sm" fullWidth>
@@ -608,15 +550,3 @@ const GameBoard = () => {
 };
 
 export default GameBoard;
-
-// NEXT GOALS:
-/*
- - DONE: Handle disconnection events (closing tab should update others; send event)
- - DONE: Handle "stand" events, updating UI
- - DONE: Handle "buy-in" events
- - DONE: Handle "Rename" events,
- - DONE: Handle "ready" events
- - DONE: Progress to game state updates
- - Handle stacks on stand/leave events (tracking money changes)
- - Handle name collisions for RENAME events
-*/
