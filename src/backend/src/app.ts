@@ -8,6 +8,7 @@ import { User } from "./models/User";
 import { IdentifyableWebSocket } from "./models/IdentifyableWebSocket";
 import { createUuid } from "./utils/helpers";
 import Game from "./models/Game";
+import { TableRepo } from "@donk/database";
 
 const database: any = {
   GAME: [],
@@ -42,7 +43,10 @@ const wss = new WebSocketServer({ port: 3032 });
 const game = database.GAME[0];
 
 // TODO: Include validation for each of the actions.
-const handleAndValidateAction = (userAction: UserAction, wsc: any) => {
+const handleAndValidateAction = (
+  userAction: UserAction,
+  wsc: IdentifyableWebSocket,
+) => {
   const player = game.getPlayer(wsc.id);
   if (userAction.type === UserEvent.Fold) {
     // TODO: Gameplay action

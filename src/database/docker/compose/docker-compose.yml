@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  postgres:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: dev-postgres
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../../src/migrations:/migrations
+      - ../../src/scripts/migration.sh:/usr/local/bin/migration.sh
+    command:
+      [
+        "sh",
+        "-c",
+        "docker-entrypoint.sh postgres & sleep 1 && migration.sh && wait",
+      ]
+    # Ensure migration script outputs are visible in logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pgdata:

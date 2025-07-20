@@ -19,8 +19,8 @@ export enum ServerEvent {
   PlayerSat = "PlayerSat",
   PlayerStood = "PlayerStood",
   Rename = "Rename",
-  UserJoined = "UserJoined",
-  UserLeft = "UserLeft",
+  UserJoined = "UserJoined", // Rename to PlayerJoined
+  UserLeft = "UserLeft", // Rename to PlayerLeft
   PlayerBuyin = "PlayerBuyin",
   Ready = "Ready",
 }
@@ -65,4 +65,16 @@ export enum Hand {
 
 export enum GameType {
   NLHE = "NLHE",
+}
+
+export enum HandType {
+  HIGH_CARD = "HIGH_CARD",
+  PAIR = "PAIR",
+  TWO_PAIR = "TWO_PAIR",
+  THREE_OF_A_KIND = "THREE_OF_A_KIND",
+  STRAIGHT = "STRAIGHT",
+  FLUSH = "FLUSH",
+  FULL_HOUSE = "FULL_HOUSE",
+  STRAIGHT_FLUSH = "STRAIGHT_FLUSH",
+  ROYAL_FLUSH = "ROYAL_FLUSH",
 }

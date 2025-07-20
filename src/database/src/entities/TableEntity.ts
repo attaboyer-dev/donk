@@ -1,11 +1,9 @@
-import { GameType } from "./enums";
-
-export type Table = {
+export type TableEntity = {
   id: number;
   name: string;
   sbSize: number;
   bbSize: number;
   minBuyIn: number;
   maxBuyIn: number;
-  gameType: GameType;
+  gameType: string; // TODO: Turn into an enum
 };

@@ -1,18 +1,20 @@
 import { IdentifyableWebSocket } from "./IdentifyableWebSocket";
 import Player from "./Player";
-import { GameType, Table } from "@donk/utils";
+import { Table } from "@donk/utils";
 
 export default class Game {
   id: number;
   table: Table;
-  gameType: GameType;
   players: Array<Player>;
+  open: boolean;
+  active: boolean;
 
   constructor(table: Table) {
     this.id = 1;
     this.table = table; // Table specific details
-    this.gameType = GameType.NLHE; // Game Type of the table
     this.players = []; // Active players at the table
+    this.open = true; // Whether the game is playable
+    this.active = false; // Whether the game is currently serving hands
   }
 
   /*
