@@ -7,22 +7,22 @@ export class GameRepo {
     return result.rows;
   }
 
-  async getGameById(id: number): Promise<GameEntity | null> {
+  async getGameById(id: number): Promise<GameEntity> {
     const result = await PgPool.query("SELECT * FROM games WHERE id = $1", [
       id,
     ]);
-    return result.rows[0] || null;
+    return result.rows[0];
   }
 
-  async addGame(game: { tableId: number }) {
+  async addGame(tableId: number): Promise<GameEntity> {
     const result = await PgPool.query(
       "INSERT INTO games (table_id) VALUES ($1) RETURNING *",
-      [game.tableId],
+      [tableId],
     );
     return result.rows[0];
   }
 
-  async completeGame(id: number) {
+  async completeGame(id: number): Promise<GameEntity> {
     const result = await PgPool.query(
       "UPDATE games SET completed_at = NOW() WHERE id = $1 RETURNING *",
       [id],

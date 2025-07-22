@@ -1,17 +1,17 @@
-import { IdentifyableWebSocket } from "./IdentifyableWebSocket";
+import { IdentifyableWebSocket } from "../ws/IdentifyableWebSocket";
 import Player from "./Player";
-import { Table } from "@donk/utils";
+import { Table } from "@donk/database";
 
-export default class Game {
+export default class GameState {
   id: number;
   table: Table;
   players: Array<Player>;
   open: boolean;
   active: boolean;
 
-  constructor(table: Table) {
-    this.id = 1;
-    this.table = table; // Table specific details
+  constructor(id: number, table: Table) {
+    this.id = id;
+    this.table = table;
     this.players = []; // Active players at the table
     this.open = true; // Whether the game is playable
     this.active = false; // Whether the game is currently serving hands
@@ -51,7 +51,7 @@ export default class Game {
     return succeeded;
   };
 
-  getPlayer = (id: number) => {
+  getPlayer = (id: string) => {
     const pIndex = this.players.findIndex((player) => player.id === id);
     return this.players[pIndex];
   };

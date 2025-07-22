@@ -149,7 +149,7 @@ const GameBoard = () => {
   const [actionLogValue, setActionLogValue] = React.useState([]);
 
   useEffect(() => {
-    ws = new WebSocket("ws://localhost:3032");
+    ws = new WebSocket("ws://localhost:3032/socket?gameId=1");
     ws.onopen = () => console.log("WebSocket open");
     setupWebSocketListeners();
 

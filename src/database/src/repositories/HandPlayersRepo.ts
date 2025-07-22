@@ -1,5 +1,5 @@
 import PgPool from "../client";
-import { HandPlayersEntity } from "../entities/HandPlayersEntity";
+import { HandUsersEntity } from "../entities/HandPlayersEntity";
 
 export class HandPlayersRepo {
   async getHandPlayers() {
@@ -7,7 +7,7 @@ export class HandPlayersRepo {
     return result.rows;
   }
 
-  async getHandPlayersByHandId(handId: number): Promise<HandPlayersEntity[]> {
+  async getHandPlayersByHandId(handId: number): Promise<HandUsersEntity[]> {
     const result = await PgPool.query(
       "SELECT * FROM hand_players WHERE hand_id = $1 ORDER BY seat",
       [handId],
@@ -15,9 +15,7 @@ export class HandPlayersRepo {
     return result.rows;
   }
 
-  async getHandPlayersByPlayerId(
-    playerId: number,
-  ): Promise<HandPlayersEntity[]> {
+  async getHandPlayersByPlayerId(playerId: number): Promise<HandUsersEntity[]> {
     const result = await PgPool.query(
       "SELECT * FROM hand_players WHERE player_id = $1",
       [playerId],

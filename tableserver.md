@@ -167,3 +167,26 @@ TODO:
 
 - How to handle standing to avoid blinds?
 - How to you handle pots and side-pots
+
+07/20
+
+I have a series of database entities, but, I need a way to convert them into relevant structures for the UI/backend.
+
+Thinking at the pre-state:
+
+- There is a set of users
+- There is a table with stored attributes
+- There is a game that's been created FROM that table
+- The game was JUST opened up, with players that have yet to join
+
+Then
+
+NEXT STEPS:
+
+- Load a single table and game into the database
+
+Thoughts:
+
+1. The client will connect to a WSS backend when accessing an active "Game"
+2. The WSS is distributed - multiple clients may end up connecting to different servers.
+3. Connections will get interrupted,

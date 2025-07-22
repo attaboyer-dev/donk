@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "moduleResolution": "Node",
     "skipLibCheck": true,
+    "composite": true,
   },
   "include": [
     "src"
@@ -17,6 +18,9 @@
   "references": [
     {
       "path": "../utils"
+    },
+    {
+      "path": "../database"
     }
   ]
 }

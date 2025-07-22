@@ -9,9 +9,10 @@
   ],
   "scripts": {
     "clean": "rm -rf src/*/dist",
-    "build": "yarn workspaces foreach -v --all --parallel run build",
+    "build": "yarn workspaces foreach -v --all --topological run build",
     "fe": "yarn workspace @donk/frontend dev",
-    "be": "yarn workspace @donk/backend dev"
+    "be": "yarn workspace @donk/backend dev",
+    "db": "(cd src/database && docker compose -f docker/compose/docker-compose.yml up --build)"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

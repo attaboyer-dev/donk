@@ -4,18 +4,19 @@
     "target": "ES2020",
     "module": "CommonJS",
     "declaration": true,
-    "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
     "skipLibCheck": true,
-    "composite": true,
     "paths": {
       "@donk/utils": [
         "src/utils/src"
       ],
       "@donk/backend": [
         "src/backend/src"
+      ],
+      "@donk/database": [
+        "src/database/src"
       ]
     }
   }
