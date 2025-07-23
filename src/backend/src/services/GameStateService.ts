@@ -24,10 +24,8 @@ export class GameStateService {
     const gameState = await this.getGameState(gameId);
     console.log("game state before adding player: %o", gameState);
     let toReturn;
-    const pIndex = gameState.players.findIndex(
-      (player) => player.id === wsc.id,
-    );
-    if (pIndex >= 0) {
+    const player = this.getPlayer(gameState, wsc.id);
+    if (player) {
       console.log("WARNING: Player - %s - already sitting at table");
     } else if (gameState.players.length >= 9) {
       console.log("WARNING: Table is already at max capacity");
@@ -45,14 +43,35 @@ export class GameStateService {
   async removePlayer(gameId: number, wsc: IdentifyableWebSocket) {
     const gameState = await this.getGameState(gameId);
     const { players } = gameState;
-    const pIndex = players.findIndex((player) => player.id === wsc.id);
-    if (pIndex >= 0) {
-      players.splice(pIndex, 1);
+    const player = this.getPlayer(gameState, wsc.id);
+    if (player) {
+      gameState.players = players.filter((p) => p.id === player.id);
       console.log("Removed player from table: %s", wsc.id);
     } else {
       console.log("WARNING: Unable to find player - %s - at the table", wsc.id);
     }
+    await this.setGameState(gameState);
     return gameState;
+  }
+
+  async playerSits(gameId: number, playerId: string, seat: number) {
+    const gameState = await this.getGameState(gameId);
+    const player = this.getPlayer(gameState, playerId);
+    player.assignedSeat = seat;
+    await this.setGameState(gameState);
+  }
+
+  async playerStands(gameId: number, playerId: string) {
+    const gameState = await this.getGameState(gameId);
+    const player = this.getPlayer(gameState, playerId);
+    player.assignedSeat = -1;
+    await this.setGameState(gameState);
+  }
+
+  getPlayer(gameState: GameState, playerId: string) {
+    const { players } = gameState;
+    const idx = players.findIndex((player) => player.id === playerId);
+    return players[idx];
   }
 
   async getGameState(gameId: number): Promise<GameState> {

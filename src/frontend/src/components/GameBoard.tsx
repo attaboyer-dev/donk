@@ -164,7 +164,7 @@ const GameBoard = () => {
     setTableValue(event.update.table);
   };
 
-  const [userValue, setUserValue] = React.useState<any>({});
+  const [userValue, setUserValue] = React.useState<any>(null);
   onUserUpdateHandler = (event) => {
     setUserValue(event.update.state);
   };
@@ -179,7 +179,7 @@ const GameBoard = () => {
     }
     const nextSeats = { ...emptySeats };
     players.forEach((p) => {
-      if (p.isSitting) {
+      if (p.assignedSeat > 0) {
         nextSeats[p.assignedSeat] = p;
       }
     });
@@ -239,17 +239,19 @@ const GameBoard = () => {
 
   // Render all the individual player seats
   const renderSeats = () => {
-    const isDisabled = (seat) => {
+    const isDisabled = (player: Player) => {
       let toReturn = false;
-      if (seat && seat.isSitting) {
+      if (player && player.assignedSeat > 0) {
         toReturn = true;
-      } else if (userValue && userValue.isSitting) {
+      } else if (userValue && userValue.assignedSeat > 0) {
         toReturn = true;
       }
       return toReturn;
     };
-    const canStand = (personInSeat) => userValue && userValue.assignedSeat === personInSeat.assignedSeat;
-
+    const canStand = (personInSeat) => {
+      console.log("uservalue", userValue);
+      return userValue && userValue.assignedSeat === personInSeat.assignedSeat;
+    };
     const totalSeats = Object.keys(seatsValue).length;
 
     return (
@@ -319,8 +321,8 @@ const GameBoard = () => {
                 <Person
                   sx={{
                     fontSize: { xs: "48px", sm: "64px", md: "80px" },
-                    color: value.isSitting ? "#4a90e2" : "#BBB",
-                    filter: value.isSitting ? "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" : "none",
+                    color: value.assignedSeat > 0 ? "#4a90e2" : "#BBB",
+                    filter: value.assignedSeat > 0 ? "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" : "none",
                     transition: "all 0.3s ease",
                   }}
                 />
@@ -344,7 +346,7 @@ const GameBoard = () => {
               </Box>
 
               {/* Stack display */}
-              {value.isSitting && value.stack && (
+              {value.assignedSeat > 0 && value.stack && (
                 <Typography
                   variant="caption"
                   sx={{

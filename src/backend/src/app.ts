@@ -1,6 +1,4 @@
-import express from "express";
 import WebSocket, { WebSocketServer } from "ws";
-
 import ServerAction from "./models/ServerAction";
 import UserAction from "./models/UserAction";
 import { ServerEvent, UserEvent } from "@donk/utils";
@@ -22,95 +20,6 @@ const createAppContext = async () => {
   };
 };
 
-// TODO: Include validation for each of the actions.
-const handleAndValidateAction = (
-  userAction: UserAction,
-  wss: WsContextServer,
-  wsc: IdentifyableWebSocket,
-  game: GameState,
-) => {
-  const pIndex = game.players.findIndex((player) => player.id === wsc.id);
-  const player = game.players[pIndex];
-  if (userAction.type === UserEvent.Fold) {
-    // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.Check) {
-    // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.Call) {
-    // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.Raise) {
-    // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.Show) {
-    // TODO: Gameplay action
-  } else if (userAction.type === UserEvent.Sit) {
-    // TODO: Validate player can sit, THEN
-    player.isSitting = true;
-    player.assignedSeat = userAction.value;
-    const tableDetails = new ServerAction(
-      ServerEvent.PlayerSat,
-      { location: player.assignedSeat, name: player.name },
-      { players: game.players },
-    );
-    wss.clients.forEach((client) => {
-      client.send(JSON.stringify(tableDetails));
-    });
-  } else if (userAction.type === UserEvent.Stand) {
-    // TODO: Validate player can STAND, THEN
-    player.isSitting = false;
-    player.assignedSeat = -1;
-    const tableDetails = new ServerAction(
-      ServerEvent.PlayerStood,
-      { location: userAction.value, name: player.name },
-      { players: game.players },
-    );
-    wss.clients.forEach((client) => {
-      client.send(JSON.stringify(tableDetails));
-    });
-  } else if (userAction.type === UserEvent.BuyIn) {
-    //TODO: Valdiation
-    player.stack += parseFloat(userAction.value);
-    const tableDetails = new ServerAction(
-      ServerEvent.PlayerBuyin,
-      { name: player.name, amount: userAction.value },
-      { players: game.players },
-    );
-    wss.clients.forEach((client) => {
-      client.send(JSON.stringify(tableDetails));
-    });
-  } else if (userAction.type === UserEvent.Leave) {
-    // TODO: Participation action
-  } else if (userAction.type === UserEvent.Join) {
-    // TODO: Participation action
-  } else if (userAction.type === UserEvent.Rename) {
-    // TODO: Must be unique
-    // TODO: Participation action
-    const prevName = player.name;
-    player.name = userAction.value;
-    const tableDetails = new ServerAction(
-      ServerEvent.Rename,
-      { prevName, nextName: player.name },
-      { players: game.players },
-    );
-    wss.clients.forEach((client) => {
-      client.send(JSON.stringify(tableDetails));
-    });
-  } else if (userAction.type === UserEvent.Ready) {
-    // TODO: Validation on whether a player can be ready
-    player.isReady = true;
-    const tableDetails = new ServerAction(
-      ServerEvent.Ready,
-      { name: player.name },
-      { players: game.players },
-    );
-    wss.clients.forEach((client) => {
-      client.send(JSON.stringify(tableDetails));
-    });
-    // If 3+ players, and all the players sitting are ready start the game!
-    // TODO!!
-  } else {
-    console.log("Unexpected event");
-  }
-};
-
 (async () => {
   // Create the application context - a singleton available across APIs/WS calls
   const appCtx = await createAppContext();
@@ -120,6 +29,105 @@ const handleAndValidateAction = (
 
   const wss = new WebSocketServer({ port: 3032 }) as WsContextServer;
   wss.context = appCtx;
+
+  // TODO: Include validation for each of the actions.
+  // TODO: This should be a event-handler, or something of the like
+  const handleAndValidateAction = async (
+    userAction: UserAction,
+    wss: WsContextServer,
+    wsc: IdentifyableWebSocket,
+    game: GameState,
+  ) => {
+    const pIndex = game.players.findIndex((player) => player.id === wsc.id);
+    const player = game.players[pIndex];
+    if (userAction.type === UserEvent.Fold) {
+      // TODO: Gameplay action
+    } else if (userAction.type === UserEvent.Check) {
+      // TODO: Gameplay action
+    } else if (userAction.type === UserEvent.Call) {
+      // TODO: Gameplay action
+    } else if (userAction.type === UserEvent.Raise) {
+      // TODO: Gameplay action
+    } else if (userAction.type === UserEvent.Show) {
+      // TODO: Gameplay action
+    } else if (userAction.type === UserEvent.Sit) {
+      // TODO: Validate player can sit, THEN
+      await appCtx.services.gameStateService.playerSits(
+        game.id,
+        wsc.id,
+        userAction.value,
+      );
+      const nextState = await appCtx.services.gameStateService.getGameState(
+        game.id,
+      );
+
+      const tableDetails = new ServerAction(
+        ServerEvent.PlayerSat,
+        { location: userAction.value, name: player.name },
+        { players: nextState.players },
+      );
+      wss.clients.forEach((client) => {
+        client.send(JSON.stringify(tableDetails));
+      });
+    } else if (userAction.type === UserEvent.Stand) {
+      // TODO: Validate player can STAND, THEN
+      await appCtx.services.gameStateService.playerStands(game.id, wsc.id);
+      const nextState = await appCtx.services.gameStateService.getGameState(
+        game.id,
+      );
+      const tableDetails = new ServerAction(
+        ServerEvent.PlayerStood,
+        { location: userAction.value, name: player.name },
+        { players: nextState.players },
+      );
+      wss.clients.forEach((client) => {
+        client.send(JSON.stringify(tableDetails));
+      });
+    } else if (userAction.type === UserEvent.BuyIn) {
+      //TODO: Valdiation
+      player.stack += parseFloat(userAction.value);
+      const tableDetails = new ServerAction(
+        ServerEvent.PlayerBuyin,
+        { name: player.name, amount: userAction.value },
+        { players: game.players },
+      );
+      wss.clients.forEach((client) => {
+        client.send(JSON.stringify(tableDetails));
+      });
+    } else if (userAction.type === UserEvent.Leave) {
+      // TODO: Participation action
+    } else if (userAction.type === UserEvent.Join) {
+      // TODO: Participation action
+    } else if (userAction.type === UserEvent.Rename) {
+      // TODO: Must be unique
+      // TODO: Participation action
+      const prevName = player.name;
+      player.name = userAction.value;
+      const tableDetails = new ServerAction(
+        ServerEvent.Rename,
+        { prevName, nextName: player.name },
+        { players: game.players },
+      );
+      wss.clients.forEach((client) => {
+        client.send(JSON.stringify(tableDetails));
+      });
+    } else if (userAction.type === UserEvent.Ready) {
+      // TODO: Validation on whether a player can be ready
+      player.isReady = true;
+      const tableDetails = new ServerAction(
+        ServerEvent.Ready,
+        { name: player.name },
+        { players: game.players },
+      );
+      wss.clients.forEach((client) => {
+        client.send(JSON.stringify(tableDetails));
+      });
+      // If 3+ players, and all the players sitting are ready start the game!
+      // TODO!!
+    } else {
+      console.log("Unexpected event");
+    }
+  };
 
   // Client attempts connection to a game
   wss.on("connection", async (wsc: IdentifyableWebSocket, req) => {
@@ -140,7 +148,10 @@ const handleAndValidateAction = (
     // Or another more secure manner
     wsc.id = createUuid();
     wsc.name = wsc.id;
-    const player = appCtx.services.gameStateService.addPlayer(gameId, wsc);
+    const player = await appCtx.services.gameStateService.addPlayer(
+      gameId,
+      wsc,
+    );
 
     // If the player couldn't be created, close the connection and log
     if (!player) {
