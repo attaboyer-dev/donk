@@ -1,4 +1,4 @@
-import { IdentifyableWebSocket } from "../IdentifyableWebSocket";
+import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
 import UserAction from "../../models/UserAction";
 import { ServerAction } from "../../models/ServerAction";
 import { ServerEvent, UserEvent } from "@donk/utils";

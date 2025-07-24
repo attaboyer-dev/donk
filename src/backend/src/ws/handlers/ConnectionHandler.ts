@@ -1,6 +1,6 @@
 import { IncomingMessage } from "http";
-import { IdentifyableWebSocket } from "../IdentifyableWebSocket";
-import { WsContextServer } from "../server";
+import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
+import { WsContextServer } from "../../types/WsContextServer";
 import { ServerAction } from "../../models/ServerAction";
 import { ServerEvent } from "@donk/utils";
 import { createUuid } from "../../utils/helpers";

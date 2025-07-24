@@ -1,6 +1,6 @@
 import { WebSocketServer } from "ws";
-import { IdentifyableWebSocket } from "./IdentifyableWebSocket";
-import { WsContextServer } from "./server";
+import { IdentifyableWebSocket } from "../types/IdentifyableWebSocket";
+import { WsContextServer } from "../types/WsContextServer";
 import { AppContext } from "../context";
 import { ConnectionHandler } from "./handlers/ConnectionHandler";
 import { MessageHandler } from "./handlers/MessageHandler";
