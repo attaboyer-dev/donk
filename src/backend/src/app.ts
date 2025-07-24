@@ -18,6 +18,7 @@ const createAppContext = async () => {
 };
 
 (async () => {
+  console.log("Initializing WebSocket server");
   // Create the application context - a singleton available across APIs/WS calls
   const appCtx = await createAppContext();
 

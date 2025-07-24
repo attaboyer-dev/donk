@@ -38,7 +38,7 @@ export class GameStateService {
     const { players } = gameState;
     const player = this.getPlayer(gameState, wsc.id);
     if (player) {
-      gameState.players = players.filter((p) => p.id === player.id);
+      gameState.players = players.filter((p) => p.id !== player.id);
     } else {
       console.warn("Player - %s - isn't at the table", wsc.id);
     }
