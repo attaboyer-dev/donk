@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from "ws";
-import ServerAction from "./models/ServerAction";
+import { ServerAction } from "./models/ServerAction";
 import UserAction from "./models/UserAction";
 import { ServerEvent, UserEvent } from "@donk/utils";
 import { IdentifyableWebSocket } from "./ws/IdentifyableWebSocket";
@@ -43,12 +43,9 @@ const createAppContext = async () => {
   // TODO: This should be a event-handler, or something of the like
   const handleAndValidateAction = async (
     userAction: UserAction,
-    wss: WsContextServer,
     wsc: IdentifyableWebSocket,
     game: GameState,
   ) => {
-    const pIndex = game.players.findIndex((player) => player.id === wsc.id);
-    const player = game.players[pIndex];
     if (userAction.type === UserEvent.Fold) {
       // TODO: Gameplay action
     } else if (userAction.type === UserEvent.Check) {
@@ -60,53 +57,57 @@ const createAppContext = async () => {
     } else if (userAction.type === UserEvent.Show) {
       // TODO: Gameplay action
     } else if (userAction.type === UserEvent.Sit) {
-      // TODO: Validate player can sit, THEN
-      const nextState = await appCtx.services.gameStateService.playerSits(
+      // Update game state
+      await appCtx.services.gameStateService.playerSits(
         game.id,
         wsc.id,
         userAction.value,
       );
 
-      const tableDetails = new ServerAction(
-        ServerEvent.PlayerSat,
-        { location: userAction.value, name: player.name },
-        { players: nextState.players },
+      // Create notification message
+      const tableDetails: ServerAction = {
+        type: ServerEvent.PlayerSat,
+        update: { location: userAction.value, name: wsc.name },
+      };
+
+      // Publish message to the game-events channel
+      await appCtx.pub.publish(
+        `game-events:${game.id}`,
+        JSON.stringify(tableDetails),
       );
-      wss.clients.forEach((client) => {
-        client.send(JSON.stringify(tableDetails));
-      });
     } else if (userAction.type === UserEvent.Stand) {
       // TODO: Validate player can STAND, THEN
-      const nextState = await appCtx.services.gameStateService.playerStands(
-        game.id,
-        wsc.id,
-      );
+      await appCtx.services.gameStateService.playerStands(game.id, wsc.id);
 
-      const tableDetails = new ServerAction(
-        ServerEvent.PlayerStood,
-        { location: userAction.value, name: player.name },
-        { players: nextState.players },
+      const tableDetails: ServerAction = {
+        type: ServerEvent.PlayerStood,
+        update: { location: userAction.value, name: wsc.name },
+      };
+
+      // Publish message to the game-events channel
+      await appCtx.pub.publish(
+        `game-events:${game.id}`,
+        JSON.stringify(tableDetails),
       );
-      wss.clients.forEach((client) => {
-        client.send(JSON.stringify(tableDetails));
-      });
     } else if (userAction.type === UserEvent.BuyIn) {
       //TODO: Valdiation
       const buyIn = parseFloat(userAction.value);
-      const nextState = await appCtx.services.gameStateService.playerBuysIn(
+      await appCtx.services.gameStateService.playerBuysIn(
         game.id,
         wsc.id,
         buyIn,
       );
 
-      const tableDetails = new ServerAction(
-        ServerEvent.PlayerBuyin,
-        { name: player.name, amount: userAction.value },
-        { players: nextState.players },
+      const tableDetails: ServerAction = {
+        type: ServerEvent.PlayerBuyin,
+        update: { name: wsc.name, amount: userAction.value },
+      };
+
+      // Publish message to the game-events channel
+      await appCtx.pub.publish(
+        `game-events:${game.id}`,
+        JSON.stringify(tableDetails),
       );
-      wss.clients.forEach((client) => {
-        client.send(JSON.stringify(tableDetails));
-      });
     } else if (userAction.type === UserEvent.Leave) {
       // TODO: Participation action
     } else if (userAction.type === UserEvent.Join) {
@@ -114,35 +115,34 @@ const createAppContext = async () => {
     } else if (userAction.type === UserEvent.Rename) {
       // TODO: Must be unique
       // TODO: Participation action
-      const prevName = player.name;
-      const nextState = await appCtx.services.gameStateService.playerRenames(
+      const prevName = wsc.name;
+      await appCtx.services.gameStateService.playerRenames(
         game.id,
         wsc.id,
         userAction.value,
       );
       wsc.name = userAction.value;
-      const tableDetails = new ServerAction(
-        ServerEvent.Rename,
-        { prevName, nextName: userAction.value },
-        { players: nextState.players },
+      const tableDetails: ServerAction = {
+        type: ServerEvent.Rename,
+        update: { prevName, nextName: userAction.value },
+      };
+      // Publish message to the game-events channel
+      await appCtx.pub.publish(
+        `game-events:${game.id}`,
+        JSON.stringify(tableDetails),
       );
-      wss.clients.forEach((client) => {
-        client.send(JSON.stringify(tableDetails));
-      });
     } else if (userAction.type === UserEvent.Ready) {
       // TODO: Validation on whether a player can be ready
-      const nextState = await appCtx.services.gameStateService.playerReady(
-        game.id,
-        wsc.id,
+      await appCtx.services.gameStateService.playerReady(game.id, wsc.id);
+      const tableDetails: ServerAction = {
+        type: ServerEvent.Ready,
+        update: { name: wsc.name },
+      };
+      // Publish message to the game-events channel
+      await appCtx.pub.publish(
+        `game-events:${game.id}`,
+        JSON.stringify(tableDetails),
       );
-      const tableDetails = new ServerAction(
-        ServerEvent.Ready,
-        { name: player.name },
-        { players: nextState.players },
-      );
-      wss.clients.forEach((client) => {
-        client.send(JSON.stringify(tableDetails));
-      });
       // If 3+ players, and all the players sitting are ready start the game!
       // TODO!!
     } else {
@@ -165,25 +165,30 @@ const createAppContext = async () => {
     }
 
     // Trigger awareness to the client
-    const handleMessage = (message: string) => {
-      const tableDetails = new ServerAction(
-        ServerEvent.GameState,
-        { table },
-        { players },
+    const handleMessage = async (message: string) => {
+      const clientsInGame = [...wss.clients].filter(
+        (client) => (client as IdentifyableWebSocket).gameId === gameId,
       );
-      // wsc.send(JSON.stringify(tableDetails));
-      console.log(tableDetails);
-      console.log("Message received %o: %o", wsc.id, message);
+
+      const action: ServerAction = JSON.parse(message);
+      action.nextState =
+        await appCtx.services.gameStateService.getGameState(gameId);
+
+      clientsInGame.forEach((client) => {
+        client.send(JSON.stringify(action));
+      });
+      console.log("Message received by %o: %o", wsc.name, message);
     };
 
-    // Subscribe to game-updates
-    await appCtx.sub.subscribe(`game-updates:${gameId}`, handleMessage);
+    // Subscribe to game-events
+    await appCtx.sub.subscribe(`game-events:${gameId}`, handleMessage);
 
     // Enhance clients with a unique ID and name
     // TODO: This should be derived from 'user' attributes, passed in via cookie
     // Or another more secure manner
     wsc.id = createUuid();
     wsc.name = wsc.id;
+    wsc.gameId = gameId;
     const player = await appCtx.services.gameStateService.addPlayer(
       gameId,
       wsc,
@@ -199,35 +204,38 @@ const createAppContext = async () => {
     const gameState =
       await appCtx.services.gameStateService.getGameState(gameId);
 
-    // Notify each client that a new user has joined
-    wss.clients.forEach((_client) => {
-      const client = _client as IdentifyableWebSocket;
-      if (client.readyState === WebSocket.OPEN && wsc.id !== wsc.id) {
-        const userJoined = new ServerAction(
-          ServerEvent.UserJoined,
-          { name: wsc.name },
-          { players: gameState.players },
-        );
-        client.send(JSON.stringify(userJoined));
-      }
-    });
+    const userJoined: ServerAction = {
+      type: ServerEvent.UserJoined,
+      update: { name: wsc.name },
+    };
+
+    // Publish message to the game-events channel
+    await appCtx.pub.publish(
+      `game-events:${gameId}`,
+      JSON.stringify(userJoined),
+    );
 
     // Indicate the table state has changed
-    const { table, players } = gameState;
-    const tableDetails = new ServerAction(
-      ServerEvent.GameState,
-      { table },
-      { players },
-    );
+    const tableDetails: ServerAction = {
+      type: ServerEvent.GameState,
+      update: { table: gameState.table },
+    };
 
     // Indicate the user details have changed
-    const userDetails = new ServerAction(
-      ServerEvent.UserInfo,
-      { state: player },
-      { players: gameState.players },
+    const userDetails: ServerAction = {
+      type: ServerEvent.UserInfo,
+      update: { state: player },
+    };
+
+    await appCtx.pub.publish(
+      `game-events:${gameId}`,
+      JSON.stringify(tableDetails),
     );
-    wsc.send(JSON.stringify(tableDetails));
-    wsc.send(JSON.stringify(userDetails));
+    await appCtx.pub.publish(
+      `game-events:${gameId}`,
+      JSON.stringify(userDetails),
+    );
+
     console.log("New client connection attempt succeeded");
     console.log("Client Count:", wss.clients.size);
 
@@ -238,24 +246,25 @@ const createAppContext = async () => {
       // All these actions will require updating backend state (client object, server state, etc.)
       const currentGameState =
         await appCtx.services.gameStateService.getGameState(gameId);
-      handleAndValidateAction(userAction, wss, wsc, currentGameState);
+      handleAndValidateAction(userAction, wsc, currentGameState);
     });
 
     // Handle the logic for connections to the client being closed
+    // TODO: Update this to potentially unsubscribe, in case there are no connections left
     wsc.on("close", async () => {
       console.log(`Websocket connection closed for ${wsc.name}`);
-      const gameState = await appCtx.services.gameStateService.removePlayer(
-        gameId,
-        wsc,
+      await appCtx.services.gameStateService.removePlayer(gameId, wsc);
+
+      const playerLeft: ServerAction = {
+        type: ServerEvent.UserLeft,
+        update: { name: wsc.name },
+      };
+
+      await appCtx.pub.publish(
+        `game-events:${gameId}`,
+        JSON.stringify(playerLeft),
       );
-      const playerLeft = new ServerAction(
-        ServerEvent.UserLeft,
-        { name: wsc.name },
-        { players: gameState.players },
-      );
-      wss.clients.forEach((client) => {
-        client.send(JSON.stringify(playerLeft));
-      });
+
       // Ideally, we want to set a timeout and handle reconnection attempts as well, checking the client id.
       // For now, we immediately pop them off the table
     });

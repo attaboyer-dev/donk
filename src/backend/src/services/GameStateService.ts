@@ -51,7 +51,7 @@ export class GameStateService {
       console.log("WARNING: Unable to find player - %s - at the table", wsc.id);
     }
     await this.setGameState(gameState);
-    return gameState;
+    return;
   }
 
   async playerSits(gameId: number, playerId: string, seat: number) {
@@ -59,7 +59,7 @@ export class GameStateService {
     const player = this.getPlayer(gameState, playerId);
     player.assignedSeat = seat;
     await this.setGameState(gameState);
-    return gameState;
+    return;
   }
 
   async playerStands(gameId: number, playerId: string) {
@@ -67,7 +67,7 @@ export class GameStateService {
     const player = this.getPlayer(gameState, playerId);
     player.assignedSeat = -1;
     await this.setGameState(gameState);
-    return gameState;
+    return;
   }
 
   async playerBuysIn(gameId: number, playerId: string, buyIn: number) {
@@ -75,7 +75,7 @@ export class GameStateService {
     const player = this.getPlayer(gameState, playerId);
     player.stack += buyIn;
     await this.setGameState(gameState);
-    return gameState;
+    return;
   }
 
   async playerRenames(gameId: number, playerId: string, name: string) {
@@ -83,7 +83,7 @@ export class GameStateService {
     const player = this.getPlayer(gameState, playerId);
     player.name = name;
     await this.setGameState(gameState);
-    return gameState;
+    return;
   }
 
   async playerReady(gameId: number, playerId: string) {
@@ -91,7 +91,7 @@ export class GameStateService {
     const player = this.getPlayer(gameState, playerId);
     player.isReady = true;
     await this.setGameState(gameState);
-    return gameState;
+    return;
   }
 
   getPlayer(gameState: GameState, playerId: string) {
