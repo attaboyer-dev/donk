@@ -8,17 +8,14 @@ export class GameRepo {
   }
 
   async getGameById(id: number): Promise<GameEntity> {
-    const result = await PgPool.query("SELECT * FROM games WHERE id = $1", [
-      id,
-    ]);
+    const result = await PgPool.query("SELECT * FROM games WHERE id = $1", [id]);
     return result.rows[0];
   }
 
   async addGame(tableId: number): Promise<GameEntity> {
-    const result = await PgPool.query(
-      "INSERT INTO games (table_id) VALUES ($1) RETURNING *",
-      [tableId],
-    );
+    const result = await PgPool.query("INSERT INTO games (table_id) VALUES ($1) RETURNING *", [
+      tableId,
+    ]);
     return result.rows[0];
   }
 

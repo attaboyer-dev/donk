@@ -9,9 +9,6 @@ export class EventRelayService {
   }
 
   async publishGameEvent(gameId: number, event: ServerAction) {
-    await this.publisher.publish(
-      `game-events:${gameId}`,
-      JSON.stringify(event),
-    );
+    await this.publisher.publish(`game-events:${gameId}`, JSON.stringify(event));
   }
 }

@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { UserEvent } from "@donk/utils";
-import { Button, FormControl, InputLabel, MenuItem, Paper, Select, Stack, TextField } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+} from "@mui/material";
 
 const ActionBox = ({ sendWSMessage }) => {
   const [inputValue, setInputValue] = useState("");
@@ -35,7 +44,12 @@ const ActionBox = ({ sendWSMessage }) => {
         transition: "left 0.3s ease",
       }}
     >
-      <Stack direction="column" spacing={2} alignItems="stretch" sx={{ width: "100%", minWidth: 250 }}>
+      <Stack
+        direction="column"
+        spacing={2}
+        alignItems="stretch"
+        sx={{ width: "100%", minWidth: 250 }}
+      >
         <TextField
           label="Value"
           variant="outlined"

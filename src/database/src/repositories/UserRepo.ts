@@ -25,10 +25,15 @@ export class UserRepo {
     return result.rows[0];
   }
 
-  async updateUser(id: number, updates: Partial<{ name: string; email: string }>): Promise<UserEntity | null> {
-    const setClause = Object.keys(updates).map((key, index) => `${key} = $${index + 2}`).join(", ");
+  async updateUser(
+    id: number,
+    updates: Partial<{ name: string; email: string }>,
+  ): Promise<UserEntity | null> {
+    const setClause = Object.keys(updates)
+      .map((key, index) => `${key} = $${index + 2}`)
+      .join(", ");
     const values = [id, ...Object.values(updates)];
-    
+
     const result = await PgPool.query(
       `UPDATE users SET ${setClause} WHERE id = $1 RETURNING *`,
       values,

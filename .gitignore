@@ -4,4 +4,4 @@
 **/.next/
 .DS_Store
 .yarn/install-state.gz
-
+dump.rdb

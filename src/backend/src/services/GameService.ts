@@ -1,10 +1,4 @@
-import {
-  asGame,
-  GameEntity,
-  GameRepo,
-  asTable,
-  TableRepo,
-} from "@donk/database";
+import { asGame, GameEntity, GameRepo, asTable, TableRepo } from "@donk/database";
 import GameState from "../models/GameState";
 
 export class GameService {

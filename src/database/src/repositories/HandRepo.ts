@@ -16,17 +16,14 @@ export class HandRepo {
   }
 
   async getHandById(id: number): Promise<HandEntity | null> {
-    const result = await PgPool.query("SELECT * FROM hands WHERE id = $1", [
-      id,
-    ]);
+    const result = await PgPool.query("SELECT * FROM hands WHERE id = $1", [id]);
     return result.rows[0] || null;
   }
 
   async addHand(hand: { gameId: number }) {
-    const result = await PgPool.query(
-      "INSERT INTO hands (game_id) VALUES ($1) RETURNING *",
-      [hand.gameId],
-    );
+    const result = await PgPool.query("INSERT INTO hands (game_id) VALUES ($1) RETURNING *", [
+      hand.gameId,
+    ]);
     return result.rows[0];
   }
 

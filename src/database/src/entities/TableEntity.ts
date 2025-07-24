@@ -25,16 +25,7 @@ export type Table = {
 };
 
 export const asTable = (entity: TableEntity): Table => {
-  const {
-    id,
-    name,
-    sb_size,
-    bb_size,
-    min_buy_in,
-    max_buy_in,
-    game_type,
-    created_at,
-  } = entity;
+  const { id, name, sb_size, bb_size, min_buy_in, max_buy_in, game_type, created_at } = entity;
   return {
     id,
     name,

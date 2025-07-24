@@ -322,7 +322,8 @@ const GameBoard = () => {
                   sx={{
                     fontSize: { xs: "48px", sm: "64px", md: "80px" },
                     color: value.assignedSeat > 0 ? "#4a90e2" : "#BBB",
-                    filter: value.assignedSeat > 0 ? "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" : "none",
+                    filter:
+                      value.assignedSeat > 0 ? "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" : "none",
                     transition: "all 0.3s ease",
                   }}
                 />

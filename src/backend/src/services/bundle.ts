@@ -13,10 +13,7 @@ export type ServiceBundle = {
   userService: UserService;
 };
 
-export const initServices = (
-  redis: RedisClientType,
-  publisher: RedisClientType,
-): ServiceBundle => {
+export const initServices = (redis: RedisClientType, publisher: RedisClientType): ServiceBundle => {
   return {
     eventRelayService: new EventRelayService(publisher),
     gameService: new GameService(),

@@ -10,11 +10,9 @@
     "esModuleInterop": true,
     "moduleResolution": "Node",
     "skipLibCheck": true,
-    "composite": true,
+    "composite": true
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     {
       "path": "../utils"

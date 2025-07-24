@@ -7,7 +7,9 @@ interface PageLayoutProps {
 
 const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", backgroundColor: "#2c3e50" }}>
+    <Box
+      sx={{ display: "flex", flexDirection: "column", height: "100vh", backgroundColor: "#2c3e50" }}
+    >
       <AppBar position="static" sx={{ backgroundColor: "#1a1a1a", flexShrink: 0 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: "#4caf50" }}>
