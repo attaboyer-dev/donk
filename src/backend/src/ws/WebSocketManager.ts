@@ -10,8 +10,8 @@ export class WebSocketManager {
   private connectionHandler: ConnectionHandler;
   private messageHandler: MessageHandler;
 
-  constructor(appContext: AppContext, port: number = 3032) {
-    this.wss = new WebSocketServer({ port }) as WsContextServer;
+  constructor(appContext: AppContext, server: any) {
+    this.wss = new WebSocketServer({ server }) as WsContextServer;
     this.wss.context = appContext;
 
     this.connectionHandler = new ConnectionHandler(appContext);

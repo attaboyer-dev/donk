@@ -149,7 +149,7 @@ const GameBoard = () => {
   const [actionLogValue, setActionLogValue] = React.useState([]);
 
   useEffect(() => {
-    ws = new WebSocket("ws://localhost:3032/socket?gameId=1");
+    ws = new WebSocket("ws://localhost:8080/socket?gameId=1");
     ws.onopen = () => console.log("WebSocket open");
     setupWebSocketListeners();
 
@@ -248,10 +248,9 @@ const GameBoard = () => {
       }
       return toReturn;
     };
-    const canStand = (personInSeat) => {
-      console.log("uservalue", userValue);
-      return userValue && userValue.assignedSeat === personInSeat.assignedSeat;
-    };
+    const canStand = (personInSeat) =>
+      userValue && userValue.assignedSeat === personInSeat.assignedSeat;
+
     const totalSeats = Object.keys(seatsValue).length;
 
     return (
