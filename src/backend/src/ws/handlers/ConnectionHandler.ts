@@ -9,12 +9,19 @@ import { AppContext } from "../../context";
 export class ConnectionHandler {
   constructor(private appContext: AppContext) {}
 
+  private addIdentityToClient(wsc: IdentifyableWebSocket, gameId: number) {
+    wsc.id = createUuid();
+    wsc.name = wsc.id;
+    wsc.gameId = gameId;
+  }
+
   async handleConnection(
+    wss: WsContextServer,
     wsc: IdentifyableWebSocket,
     req: IncomingMessage,
-    wss: WsContextServer,
   ): Promise<void> {
     console.log("Processing new websocket connection");
+    const { services } = this.appContext;
 
     const url = new URL(req.url || "", "http://localhost");
     const gameId = Number(url.searchParams.get("gameId"));
@@ -43,11 +50,9 @@ export class ConnectionHandler {
     await this.appContext.sub.subscribe(`game-events:${gameId}`, handleMessage);
 
     // Initialize WebSocket client properties
-    wsc.id = createUuid();
-    wsc.name = wsc.id;
-    wsc.gameId = gameId;
+    this.addIdentityToClient(wsc, gameId);
 
-    const player = await this.appContext.services.gameStateService.addPlayer(gameId, wsc);
+    const player = await services.gameStateService.addPlayer(gameId, wsc);
 
     if (!player) {
       console.log("Unable to create player from incoming connection. Closing");
@@ -55,7 +60,7 @@ export class ConnectionHandler {
       return;
     }
 
-    const gameState = await this.appContext.services.gameStateService.getGameState(gameId);
+    const gameState = await services.gameStateService.getGameState(gameId);
 
     // Send initial events
     const userJoined: ServerAction = {
@@ -73,12 +78,12 @@ export class ConnectionHandler {
       update: { state: player },
     };
 
-    await this.appContext.services.eventRelayService.publishGameEvent(gameId, userJoined);
-    await this.appContext.services.eventRelayService.publishGameEvent(gameId, tableDetails);
-    await this.appContext.services.eventRelayService.publishGameEvent(gameId, userDetails);
+    await services.eventRelayService.publishGameEvent(gameId, userJoined);
+    await services.eventRelayService.publishGameEvent(gameId, tableDetails);
+    await services.eventRelayService.publishGameEvent(gameId, userDetails);
 
     console.log("New client connection attempt succeeded");
-    console.log("Client Count:", wss.clients.size);
+    console.log("# of clients connected: ", wss.clients.size);
   }
 
   async handleClose(wsc: IdentifyableWebSocket): Promise<void> {

@@ -6,7 +6,7 @@ import { AppContext } from "../../context";
 export class MessageHandler {
   private gameActionProcessor: GameActionProcessor;
 
-  constructor(private appContext: AppContext) {
+  constructor(appContext: AppContext) {
     this.gameActionProcessor = new GameActionProcessor(appContext);
   }
 

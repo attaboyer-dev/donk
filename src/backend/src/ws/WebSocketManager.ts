@@ -10,10 +10,7 @@ export class WebSocketManager {
   private connectionHandler: ConnectionHandler;
   private messageHandler: MessageHandler;
 
-  constructor(
-    private appContext: AppContext,
-    port: number = 3032,
-  ) {
+  constructor(appContext: AppContext, port: number = 3032) {
     this.wss = new WebSocketServer({ port }) as WsContextServer;
     this.wss.context = appContext;
 
@@ -25,7 +22,7 @@ export class WebSocketManager {
 
   private setupEventListeners(): void {
     this.wss.on("connection", async (wsc: IdentifyableWebSocket, req) => {
-      await this.connectionHandler.handleConnection(wsc, req, this.wss);
+      await this.connectionHandler.handleConnection(this.wss, wsc, req);
 
       wsc.on("message", async (data) => {
         await this.messageHandler.handleMessage(wsc, data);
