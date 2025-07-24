@@ -15,7 +15,7 @@ export enum UserEvent {
 
 export enum ServerEvent {
   UserInfo = "UserInfo",
-  TableState = "TableState",
+  GameState = "GameState",
   PlayerSat = "PlayerSat",
   PlayerStood = "PlayerStood",
   Rename = "Rename",

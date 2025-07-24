@@ -11,12 +11,21 @@ import GameState from "./models/GameState";
 
 const createAppContext = async () => {
   const redisClient: RedisClientType = createClient();
+  const sub: RedisClientType = createClient();
+  const pub: RedisClientType = createClient();
   redisClient.on("error", (err) => console.error("Redis Client Error", err));
-  await redisClient.connect();
+
+  try {
+    await Promise.all([redisClient.connect(), sub.connect(), pub.connect()]);
+  } catch (err) {
+    console.log("Error while trying to connect to redis");
+  }
 
   return {
     services: initServices(redisClient),
     redis: redisClient,
+    pub,
+    sub,
   };
 };
 
@@ -52,13 +61,10 @@ const createAppContext = async () => {
       // TODO: Gameplay action
     } else if (userAction.type === UserEvent.Sit) {
       // TODO: Validate player can sit, THEN
-      await appCtx.services.gameStateService.playerSits(
+      const nextState = await appCtx.services.gameStateService.playerSits(
         game.id,
         wsc.id,
         userAction.value,
-      );
-      const nextState = await appCtx.services.gameStateService.getGameState(
-        game.id,
       );
 
       const tableDetails = new ServerAction(
@@ -71,10 +77,11 @@ const createAppContext = async () => {
       });
     } else if (userAction.type === UserEvent.Stand) {
       // TODO: Validate player can STAND, THEN
-      await appCtx.services.gameStateService.playerStands(game.id, wsc.id);
-      const nextState = await appCtx.services.gameStateService.getGameState(
+      const nextState = await appCtx.services.gameStateService.playerStands(
         game.id,
+        wsc.id,
       );
+
       const tableDetails = new ServerAction(
         ServerEvent.PlayerStood,
         { location: userAction.value, name: player.name },
@@ -85,11 +92,17 @@ const createAppContext = async () => {
       });
     } else if (userAction.type === UserEvent.BuyIn) {
       //TODO: Valdiation
-      player.stack += parseFloat(userAction.value);
+      const buyIn = parseFloat(userAction.value);
+      const nextState = await appCtx.services.gameStateService.playerBuysIn(
+        game.id,
+        wsc.id,
+        buyIn,
+      );
+
       const tableDetails = new ServerAction(
         ServerEvent.PlayerBuyin,
         { name: player.name, amount: userAction.value },
-        { players: game.players },
+        { players: nextState.players },
       );
       wss.clients.forEach((client) => {
         client.send(JSON.stringify(tableDetails));
@@ -102,22 +115,30 @@ const createAppContext = async () => {
       // TODO: Must be unique
       // TODO: Participation action
       const prevName = player.name;
-      player.name = userAction.value;
+      const nextState = await appCtx.services.gameStateService.playerRenames(
+        game.id,
+        wsc.id,
+        userAction.value,
+      );
+      wsc.name = userAction.value;
       const tableDetails = new ServerAction(
         ServerEvent.Rename,
-        { prevName, nextName: player.name },
-        { players: game.players },
+        { prevName, nextName: userAction.value },
+        { players: nextState.players },
       );
       wss.clients.forEach((client) => {
         client.send(JSON.stringify(tableDetails));
       });
     } else if (userAction.type === UserEvent.Ready) {
       // TODO: Validation on whether a player can be ready
-      player.isReady = true;
+      const nextState = await appCtx.services.gameStateService.playerReady(
+        game.id,
+        wsc.id,
+      );
       const tableDetails = new ServerAction(
         ServerEvent.Ready,
         { name: player.name },
-        { players: game.players },
+        { players: nextState.players },
       );
       wss.clients.forEach((client) => {
         client.send(JSON.stringify(tableDetails));
@@ -142,6 +163,21 @@ const createAppContext = async () => {
       wsc.close();
       return;
     }
+
+    // Trigger awareness to the client
+    const handleMessage = (message: string) => {
+      const tableDetails = new ServerAction(
+        ServerEvent.GameState,
+        { table },
+        { players },
+      );
+      // wsc.send(JSON.stringify(tableDetails));
+      console.log(tableDetails);
+      console.log("Message received %o: %o", wsc.id, message);
+    };
+
+    // Subscribe to game-updates
+    await appCtx.sub.subscribe(`game-updates:${gameId}`, handleMessage);
 
     // Enhance clients with a unique ID and name
     // TODO: This should be derived from 'user' attributes, passed in via cookie
@@ -179,7 +215,7 @@ const createAppContext = async () => {
     // Indicate the table state has changed
     const { table, players } = gameState;
     const tableDetails = new ServerAction(
-      ServerEvent.TableState,
+      ServerEvent.GameState,
       { table },
       { players },
     );

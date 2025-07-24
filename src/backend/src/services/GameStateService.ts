@@ -59,6 +59,7 @@ export class GameStateService {
     const player = this.getPlayer(gameState, playerId);
     player.assignedSeat = seat;
     await this.setGameState(gameState);
+    return gameState;
   }
 
   async playerStands(gameId: number, playerId: string) {
@@ -66,6 +67,31 @@ export class GameStateService {
     const player = this.getPlayer(gameState, playerId);
     player.assignedSeat = -1;
     await this.setGameState(gameState);
+    return gameState;
+  }
+
+  async playerBuysIn(gameId: number, playerId: string, buyIn: number) {
+    const gameState = await this.getGameState(gameId);
+    const player = this.getPlayer(gameState, playerId);
+    player.stack += buyIn;
+    await this.setGameState(gameState);
+    return gameState;
+  }
+
+  async playerRenames(gameId: number, playerId: string, name: string) {
+    const gameState = await this.getGameState(gameId);
+    const player = this.getPlayer(gameState, playerId);
+    player.name = name;
+    await this.setGameState(gameState);
+    return gameState;
+  }
+
+  async playerReady(gameId: number, playerId: string) {
+    const gameState = await this.getGameState(gameId);
+    const player = this.getPlayer(gameState, playerId);
+    player.isReady = true;
+    await this.setGameState(gameState);
+    return gameState;
   }
 
   getPlayer(gameState: GameState, playerId: string) {

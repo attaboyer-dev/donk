@@ -76,7 +76,7 @@ const eventToLog = (event) => {
     toReturn = "User - " + update.name + " - joined the table";
   } else if (type === ServerEvent.UserLeft) {
     toReturn = "User - " + update.name + " - left the table";
-  } else if (type === ServerEvent.TableState) {
+  } else if (type === ServerEvent.GameState) {
     toReturn = "Loading table state for '" + update.table.name + "'";
   } else if (type === ServerEvent.UserInfo) {
     toReturn = "Loading user info";
@@ -108,7 +108,7 @@ const setupWebSocketListeners = () => {
   ws.addEventListener("message", (event) => {
     let eventJSON = JSON.parse(event.data);
     console.log("server message: %o", eventJSON);
-    if (eventJSON.type === ServerEvent.TableState) {
+    if (eventJSON.type === ServerEvent.GameState) {
       onTableUpdateHandler(eventJSON);
     } else if (eventJSON.type === ServerEvent.UserInfo) {
       onUserUpdateHandler(eventJSON);

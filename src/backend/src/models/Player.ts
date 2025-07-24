@@ -3,7 +3,7 @@ import { IdentifyableWebSocket } from "../ws/IdentifyableWebSocket";
 export default class Player {
   id: any;
   name: any;
-  isReady: any;
+  isReady: boolean;
   assignedSeat: number;
   stack: any;
   constructor(wsc: IdentifyableWebSocket) {
