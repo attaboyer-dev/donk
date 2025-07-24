@@ -34,6 +34,8 @@ export class ConnectionHandler {
 
     // Set up Redis subscription for game events
     const handleMessage = async (message: string) => {
+      // Only the most recent callback is used against a channel (game-event:<id>)
+      // Therefore, ensure ALL clients associated to the game are included
       const clientsInGame = [...wss.clients].filter(
         (client) => (client as IdentifyableWebSocket).gameId === gameId,
       );
