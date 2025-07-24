@@ -4,7 +4,7 @@ import { WsContextServer } from "../../types/WsContextServer";
 import { ServerAction } from "../../models/ServerAction";
 import { ServerEvent } from "@donk/utils";
 import { createUuid } from "../../utils/helpers";
-import { AppContext } from "../../context";
+import { AppContext } from "../../types/AppContext";
 
 export class ConnectionHandler {
   constructor(private appContext: AppContext) {}

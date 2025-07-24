@@ -2,7 +2,7 @@ import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
 import UserAction from "../../models/UserAction";
 import { ServerAction } from "../../models/ServerAction";
 import { ServerEvent, UserEvent } from "@donk/utils";
-import { AppContext } from "../../context";
+import { AppContext } from "../../types/AppContext";
 
 export class GameActionProcessor {
   constructor(private appContext: AppContext) {}
