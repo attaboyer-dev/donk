@@ -9,6 +9,14 @@ import { createClient, RedisClientType } from "redis";
 import { WsContextServer } from "./ws/server";
 import GameState from "./models/GameState";
 
+const publishGameEvent = async (
+  pub: RedisClientType,
+  gameId: number,
+  event: ServerAction,
+) => {
+  await pub.publish(`game-events:${gameId}`, JSON.stringify(event));
+};
+
 const createAppContext = async () => {
   const redisClient: RedisClientType = createClient();
   const sub: RedisClientType = createClient();
@@ -71,10 +79,7 @@ const createAppContext = async () => {
       };
 
       // Publish message to the game-events channel
-      await appCtx.pub.publish(
-        `game-events:${game.id}`,
-        JSON.stringify(tableDetails),
-      );
+      await publishGameEvent(appCtx.pub, game.id, tableDetails);
     } else if (userAction.type === UserEvent.Stand) {
       // TODO: Validate player can STAND, THEN
       await appCtx.services.gameStateService.playerStands(game.id, wsc.id);
@@ -85,10 +90,7 @@ const createAppContext = async () => {
       };
 
       // Publish message to the game-events channel
-      await appCtx.pub.publish(
-        `game-events:${game.id}`,
-        JSON.stringify(tableDetails),
-      );
+      await publishGameEvent(appCtx.pub, game.id, tableDetails);
     } else if (userAction.type === UserEvent.BuyIn) {
       //TODO: Valdiation
       const buyIn = parseFloat(userAction.value);
@@ -104,10 +106,7 @@ const createAppContext = async () => {
       };
 
       // Publish message to the game-events channel
-      await appCtx.pub.publish(
-        `game-events:${game.id}`,
-        JSON.stringify(tableDetails),
-      );
+      await publishGameEvent(appCtx.pub, game.id, tableDetails);
     } else if (userAction.type === UserEvent.Leave) {
       // TODO: Participation action
     } else if (userAction.type === UserEvent.Join) {
@@ -127,10 +126,7 @@ const createAppContext = async () => {
         update: { prevName, nextName: userAction.value },
       };
       // Publish message to the game-events channel
-      await appCtx.pub.publish(
-        `game-events:${game.id}`,
-        JSON.stringify(tableDetails),
-      );
+      await publishGameEvent(appCtx.pub, game.id, tableDetails);
     } else if (userAction.type === UserEvent.Ready) {
       // TODO: Validation on whether a player can be ready
       await appCtx.services.gameStateService.playerReady(game.id, wsc.id);
@@ -139,10 +135,7 @@ const createAppContext = async () => {
         update: { name: wsc.name },
       };
       // Publish message to the game-events channel
-      await appCtx.pub.publish(
-        `game-events:${game.id}`,
-        JSON.stringify(tableDetails),
-      );
+      await publishGameEvent(appCtx.pub, game.id, tableDetails);
       // If 3+ players, and all the players sitting are ready start the game!
       // TODO!!
     } else {
@@ -204,16 +197,11 @@ const createAppContext = async () => {
     const gameState =
       await appCtx.services.gameStateService.getGameState(gameId);
 
+    // Indicate user has joined
     const userJoined: ServerAction = {
       type: ServerEvent.UserJoined,
       update: { name: wsc.name },
     };
-
-    // Publish message to the game-events channel
-    await appCtx.pub.publish(
-      `game-events:${gameId}`,
-      JSON.stringify(userJoined),
-    );
 
     // Indicate the table state has changed
     const tableDetails: ServerAction = {
@@ -227,14 +215,9 @@ const createAppContext = async () => {
       update: { state: player },
     };
 
-    await appCtx.pub.publish(
-      `game-events:${gameId}`,
-      JSON.stringify(tableDetails),
-    );
-    await appCtx.pub.publish(
-      `game-events:${gameId}`,
-      JSON.stringify(userDetails),
-    );
+    await publishGameEvent(appCtx.pub, gameId, userJoined);
+    await publishGameEvent(appCtx.pub, gameId, tableDetails);
+    await publishGameEvent(appCtx.pub, gameId, userDetails);
 
     console.log("New client connection attempt succeeded");
     console.log("Client Count:", wss.clients.size);
@@ -260,13 +243,7 @@ const createAppContext = async () => {
         update: { name: wsc.name },
       };
 
-      await appCtx.pub.publish(
-        `game-events:${gameId}`,
-        JSON.stringify(playerLeft),
-      );
-
-      // Ideally, we want to set a timeout and handle reconnection attempts as well, checking the client id.
-      // For now, we immediately pop them off the table
+      await publishGameEvent(appCtx.pub, gameId, playerLeft);
     });
   });
 })();

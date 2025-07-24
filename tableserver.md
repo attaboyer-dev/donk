@@ -185,8 +185,30 @@ NEXT STEPS:
 
 - Load a single table and game into the database
 
+Websocket Server Implementation Logic
+
+Definitions:
+
+- WSS: Websocket Server
+
+Assumptions:
+
+- A WSS may have multiple client connections for various ongoing games
+- Connection clients (players) of a game may be spread across multiple WSS
+- WSS are expected to be distributed across K8S pods, and may go down at any time
+
 Thoughts:
 
-1. The client will connect to a WSS backend when accessing an active "Game"
-2. The WSS is distributed - multiple clients may end up connecting to different servers.
-3. Connections will get interrupted,
+As a client connects to a WSS, it indicates what game it's attempting to join.
+Validation is done to associate that connection to an internal user (TODO) as well
+as check whether that user has access to a given table/game (TODO).
+
+Upon connecting to a table and after validation, a client will attempt to subscribe
+to a Redis channel corresponding to the requested game. This channel will have
+messages published against it whenever the game state is updated. By joining, this
+triggers the "playedAdded" event, modifying the game state. A message gets published.
+
+To simplify: whenever the game state is altered, an update is done in Redis to reflect
+it and a message it published to the game channel indicating _what_ changed.
+Subscribers of the channel, learning of the change, retrieve the updated game state,
+and send to the clients.
