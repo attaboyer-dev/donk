@@ -22,22 +22,15 @@ export class GameStateService {
 
   async addPlayer(gameId: number, wsc: IdentifyableWebSocket) {
     const gameState = await this.getGameState(gameId);
-    console.log("game state before adding player: %o", gameState);
-    let toReturn;
-    const player = this.getPlayer(gameState, wsc.id);
+    let player = this.getPlayer(gameState, wsc.id);
     if (player) {
-      console.log("WARNING: Player - %s - already sitting at table");
-    } else if (gameState.players.length >= 9) {
-      console.log("WARNING: Table is already at max capacity");
+      console.warn("Player - %s - already sitting at table");
     } else {
-      toReturn = new Player(wsc);
-      gameState.players.push(toReturn);
-      console.log("Adding new player to table: %s", wsc.id);
+      player = new Player(wsc);
+      gameState.players.push(player);
     }
     await this.setGameState(gameState);
-    console.log("game state after adding player: %o", gameState);
-
-    return toReturn;
+    return player;
   }
 
   async removePlayer(gameId: number, wsc: IdentifyableWebSocket) {
@@ -46,9 +39,8 @@ export class GameStateService {
     const player = this.getPlayer(gameState, wsc.id);
     if (player) {
       gameState.players = players.filter((p) => p.id === player.id);
-      console.log("Removed player from table: %s", wsc.id);
     } else {
-      console.log("WARNING: Unable to find player - %s - at the table", wsc.id);
+      console.warn("Player - %s - isn't at the table", wsc.id);
     }
     await this.setGameState(gameState);
     return;

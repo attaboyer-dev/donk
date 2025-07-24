@@ -3,21 +3,18 @@ import { createClient, RedisClientType } from "redis";
 import { WebSocketManager } from "./ws/WebSocketManager";
 
 const createAppContext = async () => {
-  const redisClient: RedisClientType = createClient();
-  const sub: RedisClientType = createClient();
-  const pub: RedisClientType = createClient();
-  redisClient.on("error", (err) => console.error("Redis Client Error", err));
-
   try {
-    await Promise.all([redisClient.connect(), sub.connect(), pub.connect()]);
+    const store = createClient() as RedisClientType;
+    const sub = createClient() as RedisClientType;
+    const pub = createClient() as RedisClientType;
+    await Promise.all([store.connect(), sub.connect(), pub.connect()]);
+    return {
+      services: initServices(store, pub, sub),
+    };
   } catch (err) {
     console.log("Error while trying to connect to redis");
+    throw new Error("Unable to initialize application context");
   }
-
-  return {
-    services: initServices(redisClient, pub),
-    sub,
-  };
 };
 
 (async () => {

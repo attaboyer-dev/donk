@@ -49,7 +49,7 @@ export class ConnectionHandler {
       console.log("Message received by %o: %o", wsc.name, message);
     };
 
-    await this.appContext.sub.subscribe(`game-events:${gameId}`, handleMessage);
+    await services.eventRelayService.subscribeToGameEvents(gameId, handleMessage);
 
     // Initialize WebSocket client properties
     this.addIdentityToClient(wsc, gameId);
@@ -57,7 +57,7 @@ export class ConnectionHandler {
     const player = await services.gameStateService.addPlayer(gameId, wsc);
 
     if (!player) {
-      console.log("Unable to create player from incoming connection. Closing");
+      console.error("Unable to create player from incoming connection. Closing");
       wsc.close();
       return;
     }

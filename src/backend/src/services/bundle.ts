@@ -1,4 +1,4 @@
-import { RedisClientType } from "redis";
+import { RedisClientType, createClient } from "redis";
 import { EventRelayService } from "./EventRelayService";
 import { GameService } from "./GameService";
 import { GameStateService } from "./GameStateService";
@@ -13,11 +13,15 @@ export type ServiceBundle = {
   userService: UserService;
 };
 
-export const initServices = (redis: RedisClientType, publisher: RedisClientType): ServiceBundle => {
+export const initServices = (
+  store: RedisClientType,
+  publisher: RedisClientType,
+  subscriber: RedisClientType,
+): ServiceBundle => {
   return {
-    eventRelayService: new EventRelayService(publisher),
+    eventRelayService: new EventRelayService(publisher, subscriber),
     gameService: new GameService(),
-    gameStateService: new GameStateService(redis),
+    gameStateService: new GameStateService(store),
     handService: new HandService(),
     userService: new UserService(),
   };
