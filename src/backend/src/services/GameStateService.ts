@@ -54,41 +54,46 @@ export class GameStateService {
     return;
   }
 
-  async playerSits(gameId: number, playerId: string, seat: number) {
+  async playerSits(client: IdentifyableWebSocket, seat: number) {
+    const { id, gameId } = client;
     const gameState = await this.getGameState(gameId);
-    const player = this.getPlayer(gameState, playerId);
+    const player = this.getPlayer(gameState, id);
     player.assignedSeat = seat;
     await this.setGameState(gameState);
     return;
   }
 
-  async playerStands(gameId: number, playerId: string) {
+  async playerStands(client: IdentifyableWebSocket) {
+    const { id, gameId } = client;
     const gameState = await this.getGameState(gameId);
-    const player = this.getPlayer(gameState, playerId);
+    const player = this.getPlayer(gameState, id);
     player.assignedSeat = -1;
     await this.setGameState(gameState);
     return;
   }
 
-  async playerBuysIn(gameId: number, playerId: string, buyIn: number) {
+  async playerBuysIn(client: IdentifyableWebSocket, buyIn: number) {
+    const { id, gameId } = client;
     const gameState = await this.getGameState(gameId);
-    const player = this.getPlayer(gameState, playerId);
+    const player = this.getPlayer(gameState, id);
     player.stack += buyIn;
     await this.setGameState(gameState);
     return;
   }
 
-  async playerRenames(gameId: number, playerId: string, name: string) {
+  async playerRenames(client: IdentifyableWebSocket, name: string) {
+    const { id, gameId } = client;
     const gameState = await this.getGameState(gameId);
-    const player = this.getPlayer(gameState, playerId);
+    const player = this.getPlayer(gameState, id);
     player.name = name;
     await this.setGameState(gameState);
     return;
   }
 
-  async playerReady(gameId: number, playerId: string) {
+  async playerReady(client: IdentifyableWebSocket) {
+    const { id, gameId } = client;
     const gameState = await this.getGameState(gameId);
-    const player = this.getPlayer(gameState, playerId);
+    const player = this.getPlayer(gameState, id);
     player.isReady = true;
     await this.setGameState(gameState);
     return;

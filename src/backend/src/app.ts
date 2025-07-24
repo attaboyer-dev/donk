@@ -1,4 +1,4 @@
-import WebSocket, { WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 import { ServerAction } from "./models/ServerAction";
 import UserAction from "./models/UserAction";
 import { ServerEvent, UserEvent } from "@donk/utils";
@@ -7,15 +7,6 @@ import { createUuid } from "./utils/helpers";
 import { initServices } from "./services/bundle";
 import { createClient, RedisClientType } from "redis";
 import { WsContextServer } from "./ws/server";
-import GameState from "./models/GameState";
-
-const publishGameEvent = async (
-  pub: RedisClientType,
-  gameId: number,
-  event: ServerAction,
-) => {
-  await pub.publish(`game-events:${gameId}`, JSON.stringify(event));
-};
 
 const createAppContext = async () => {
   const redisClient: RedisClientType = createClient();
@@ -30,9 +21,7 @@ const createAppContext = async () => {
   }
 
   return {
-    services: initServices(redisClient),
-    redis: redisClient,
-    pub,
+    services: initServices(redisClient, pub),
     sub,
   };
 };
@@ -52,7 +41,6 @@ const createAppContext = async () => {
   const handleAndValidateAction = async (
     userAction: UserAction,
     wsc: IdentifyableWebSocket,
-    game: GameState,
   ) => {
     if (userAction.type === UserEvent.Fold) {
       // TODO: Gameplay action
@@ -66,11 +54,7 @@ const createAppContext = async () => {
       // TODO: Gameplay action
     } else if (userAction.type === UserEvent.Sit) {
       // Update game state
-      await appCtx.services.gameStateService.playerSits(
-        game.id,
-        wsc.id,
-        userAction.value,
-      );
+      await appCtx.services.gameStateService.playerSits(wsc, userAction.value);
 
       // Create notification message
       const tableDetails: ServerAction = {
@@ -78,11 +62,13 @@ const createAppContext = async () => {
         update: { location: userAction.value, name: wsc.name },
       };
 
-      // Publish message to the game-events channel
-      await publishGameEvent(appCtx.pub, game.id, tableDetails);
+      await appCtx.services.eventRelayService.publishGameEvent(
+        wsc.gameId,
+        tableDetails,
+      );
     } else if (userAction.type === UserEvent.Stand) {
       // TODO: Validate player can STAND, THEN
-      await appCtx.services.gameStateService.playerStands(game.id, wsc.id);
+      await appCtx.services.gameStateService.playerStands(wsc);
 
       const tableDetails: ServerAction = {
         type: ServerEvent.PlayerStood,
@@ -90,15 +76,14 @@ const createAppContext = async () => {
       };
 
       // Publish message to the game-events channel
-      await publishGameEvent(appCtx.pub, game.id, tableDetails);
+      await appCtx.services.eventRelayService.publishGameEvent(
+        wsc.gameId,
+        tableDetails,
+      );
     } else if (userAction.type === UserEvent.BuyIn) {
       //TODO: Valdiation
       const buyIn = parseFloat(userAction.value);
-      await appCtx.services.gameStateService.playerBuysIn(
-        game.id,
-        wsc.id,
-        buyIn,
-      );
+      await appCtx.services.gameStateService.playerBuysIn(wsc, buyIn);
 
       const tableDetails: ServerAction = {
         type: ServerEvent.PlayerBuyin,
@@ -106,7 +91,10 @@ const createAppContext = async () => {
       };
 
       // Publish message to the game-events channel
-      await publishGameEvent(appCtx.pub, game.id, tableDetails);
+      await appCtx.services.eventRelayService.publishGameEvent(
+        wsc.gameId,
+        tableDetails,
+      );
     } else if (userAction.type === UserEvent.Leave) {
       // TODO: Participation action
     } else if (userAction.type === UserEvent.Join) {
@@ -116,8 +104,7 @@ const createAppContext = async () => {
       // TODO: Participation action
       const prevName = wsc.name;
       await appCtx.services.gameStateService.playerRenames(
-        game.id,
-        wsc.id,
+        wsc,
         userAction.value,
       );
       wsc.name = userAction.value;
@@ -126,16 +113,22 @@ const createAppContext = async () => {
         update: { prevName, nextName: userAction.value },
       };
       // Publish message to the game-events channel
-      await publishGameEvent(appCtx.pub, game.id, tableDetails);
+      await appCtx.services.eventRelayService.publishGameEvent(
+        wsc.gameId,
+        tableDetails,
+      );
     } else if (userAction.type === UserEvent.Ready) {
       // TODO: Validation on whether a player can be ready
-      await appCtx.services.gameStateService.playerReady(game.id, wsc.id);
+      await appCtx.services.gameStateService.playerReady(wsc);
       const tableDetails: ServerAction = {
         type: ServerEvent.Ready,
         update: { name: wsc.name },
       };
       // Publish message to the game-events channel
-      await publishGameEvent(appCtx.pub, game.id, tableDetails);
+      await appCtx.services.eventRelayService.publishGameEvent(
+        wsc.gameId,
+        tableDetails,
+      );
       // If 3+ players, and all the players sitting are ready start the game!
       // TODO!!
     } else {
@@ -215,21 +208,27 @@ const createAppContext = async () => {
       update: { state: player },
     };
 
-    await publishGameEvent(appCtx.pub, gameId, userJoined);
-    await publishGameEvent(appCtx.pub, gameId, tableDetails);
-    await publishGameEvent(appCtx.pub, gameId, userDetails);
+    await appCtx.services.eventRelayService.publishGameEvent(
+      gameId,
+      userJoined,
+    );
+    await appCtx.services.eventRelayService.publishGameEvent(
+      gameId,
+      tableDetails,
+    );
+    await appCtx.services.eventRelayService.publishGameEvent(
+      gameId,
+      userDetails,
+    );
 
     console.log("New client connection attempt succeeded");
-    console.log("Client Count:", wss.clients.size);
 
     // Handle the logic for receiving new messages from clients
     wsc.on("message", async (data) => {
       const userAction = new UserAction(wsc.name, data);
       console.log("User ID - %s - triggering %s", wsc.name, userAction);
       // All these actions will require updating backend state (client object, server state, etc.)
-      const currentGameState =
-        await appCtx.services.gameStateService.getGameState(gameId);
-      handleAndValidateAction(userAction, wsc, currentGameState);
+      handleAndValidateAction(userAction, wsc);
     });
 
     // Handle the logic for connections to the client being closed
@@ -243,7 +242,10 @@ const createAppContext = async () => {
         update: { name: wsc.name },
       };
 
-      await publishGameEvent(appCtx.pub, gameId, playerLeft);
+      await appCtx.services.eventRelayService.publishGameEvent(
+        gameId,
+        playerLeft,
+      );
     });
   });
 })();
