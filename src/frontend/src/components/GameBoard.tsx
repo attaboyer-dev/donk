@@ -17,6 +17,7 @@ import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import ActionLog from "./ActionLog";
 import ActionBox from "./ActionBox";
+import { useApi } from "../contexts/ApiContext";
 
 const foldMessage = () => ({ type: UserEvent.Fold });
 const checkMessage = () => ({ type: UserEvent.Check });
@@ -124,6 +125,7 @@ const setupWebSocketListeners = () => {
 };
 
 const GameBoard = () => {
+  const api = useApi();
   const [infoDialogOpen, setInfoDialogOpen] = React.useState(false);
   const handleInfoOpen = () => setInfoDialogOpen(true);
   const handleInfoClose = () => setInfoDialogOpen(false);
@@ -149,6 +151,18 @@ const GameBoard = () => {
   const [actionLogValue, setActionLogValue] = React.useState([]);
 
   useEffect(() => {
+    // Fetch table data from API
+    const fetchTableData = async () => {
+      try {
+        const tableData = await api.tables.getById(1);
+        setTableValue(tableData);
+      } catch (error) {
+        console.error("Failed to fetch table data:", error);
+      }
+    };
+
+    fetchTableData();
+
     ws = new WebSocket("ws://localhost:8080/socket?gameId=1");
     ws.onopen = () => console.log("WebSocket open");
     setupWebSocketListeners();
@@ -158,7 +172,7 @@ const GameBoard = () => {
         ws.close();
       }
     };
-  }, []);
+  }, [api]);
 
   onTableUpdateHandler = (event) => {
     setTableValue(event.update.table);

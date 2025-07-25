@@ -4,12 +4,14 @@ import { GameService } from "./GameService";
 import { GameStateService } from "./GameStateService";
 import { HandService } from "./HandService";
 import { UserService } from "./UserService";
+import { TableService } from "./TableService";
 
 export type ServiceBundle = {
   eventRelayService: EventRelayService;
+  handService: HandService;
   gameService: GameService;
   gameStateService: GameStateService;
-  handService: HandService;
+  tableService: TableService;
   userService: UserService;
 };
 
@@ -20,9 +22,10 @@ export const initServices = (
 ): ServiceBundle => {
   return {
     eventRelayService: new EventRelayService(publisher, subscriber),
+    handService: new HandService(),
     gameService: new GameService(),
     gameStateService: new GameStateService(store),
-    handService: new HandService(),
+    tableService: new TableService(),
     userService: new UserService(),
   };
 };

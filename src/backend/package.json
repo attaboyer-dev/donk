@@ -17,6 +17,8 @@
     "ws": "^8.8"
   },
   "devDependencies": {
+    "@types/express": "^5.0",
+    "@types/ws": "^8.18",
     "nodemon": "^2.0",
     "ts-node": "^10.9"
   }

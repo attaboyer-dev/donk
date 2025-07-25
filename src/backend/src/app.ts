@@ -5,7 +5,7 @@ import { createClient, RedisClientType } from "redis";
 import apiRoutes from "./api/routes";
 import { initServices } from "./services/bundle";
 import { WebSocketManager } from "./ws/WebSocketManager";
-import { createContextMiddleware } from "./api/middleware/AppContextMiddleware";
+import { createContextMiddleware } from "./api/middleware/ContextMiddleware";
 
 const createAppContext = async () => {
   try {

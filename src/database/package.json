@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@donk/utils": "workspace:^",
-    "moment": "^2.30.1",
+    "moment": "^2.30",
     "pg": "^8.16"
   },
   "devDependencies": {
