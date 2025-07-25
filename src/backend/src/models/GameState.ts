@@ -1,5 +1,5 @@
 import Player from "./Player";
-import { Table } from "@donk/database";
+import { Table } from "@donk/utils";
 
 export default class GameState {
   id: number;

@@ -212,3 +212,16 @@ To simplify: whenever the game state is altered, an update is done in Redis to r
 it and a message it published to the game channel indicating _what_ changed.
 Subscribers of the channel, learning of the change, retrieve the updated game state,
 and send to the clients.
+
+TODO:
+
+- Fix serialization of data between backend and frontend
+- Update the UI API client to be more straightforward
+- Create structure around conversion of raw DB entities to standard object structures
+- Verify table details display correctly on the GameBoard
+- Determine and implement process for starting gameplay (hands)
+- Add hand play logic
+  - Augument player objects and others for tracking cards/bets/pots
+  - Add logic for shuffle, dealing, getting cards out
+    - Ideally, make it flexible for OMAHA and others
+  - Add in user actions for fold, call, raise, etc.

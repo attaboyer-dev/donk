@@ -1,4 +1,4 @@
-export { Table, TableEntity, asTable } from "./entities/TableEntity";
+export { TableEntity, asTable } from "./entities/TableEntity";
 export { UserEntity } from "./entities/UserEntity";
 export { Game, GameEntity, asGame } from "./entities/GameEntity";
 

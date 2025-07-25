@@ -70,18 +70,12 @@ export class ConnectionHandler {
       update: { name: wsc.name },
     };
 
-    const tableDetails: ServerAction = {
-      type: ServerEvent.GameState,
-      update: { table: gameState.table },
-    };
-
     const userDetails: ServerAction = {
       type: ServerEvent.UserInfo,
       update: { state: player },
     };
 
     await services.eventRelayService.publishGameEvent(gameId, userJoined);
-    await services.eventRelayService.publishGameEvent(gameId, tableDetails);
     await services.eventRelayService.publishGameEvent(gameId, userDetails);
 
     console.log("New client connection attempt succeeded");

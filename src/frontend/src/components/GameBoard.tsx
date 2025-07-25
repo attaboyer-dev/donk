@@ -1,22 +1,10 @@
 import { ServerEvent, UserEvent, Player } from "@donk/utils";
-import {
-  Box,
-  Button,
-  Typography,
-  IconButton,
-  Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Drawer,
-  Toolbar,
-  Divider,
-} from "@mui/material";
+import { Box, Button, Typography, IconButton, Drawer, Toolbar, Divider } from "@mui/material";
 import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import ActionLog from "./ActionLog";
 import ActionBox from "./ActionBox";
+import TableInfoDialog from "./TableInfoDialog";
 import { useApi } from "../contexts/ApiContext";
 
 const foldMessage = () => ({ type: UserEvent.Fold });
@@ -77,8 +65,6 @@ const eventToLog = (event) => {
     toReturn = "User - " + update.name + " - joined the table";
   } else if (type === ServerEvent.UserLeft) {
     toReturn = "User - " + update.name + " - left the table";
-  } else if (type === ServerEvent.GameState) {
-    toReturn = "Loading table state for '" + update.table.name + "'";
   } else if (type === ServerEvent.UserInfo) {
     toReturn = "Loading user info";
   } else if (type === ServerEvent.Rename) {
@@ -108,7 +94,7 @@ const setupWebSocketListeners = () => {
 
   ws.addEventListener("message", (event) => {
     let eventJSON = JSON.parse(event.data);
-    console.log("server message: %o", eventJSON);
+    //  console.log("server message: %o", eventJSON);
     if (eventJSON.type === ServerEvent.GameState) {
       onTableUpdateHandler(eventJSON);
     } else if (eventJSON.type === ServerEvent.UserInfo) {
@@ -155,6 +141,7 @@ const GameBoard = () => {
     const fetchTableData = async () => {
       try {
         const tableData = await api.tables.getById(1);
+        console.log("table", tableData);
         setTableValue(tableData);
       } catch (error) {
         console.error("Failed to fetch table data:", error);
@@ -527,24 +514,7 @@ const GameBoard = () => {
         <ActionBox sendWSMessage={sendWSMessage} />
       </Box>
 
-      <Dialog open={infoDialogOpen} onClose={handleInfoClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Table Information</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2}>
-            <Typography variant="h6" component="div">
-              {tableValue.name}
-            </Typography>
-            <Typography variant="body1">Small Blind: {tableValue.sbSize}</Typography>
-            <Typography variant="body1">Big Blind: {tableValue.bbSize}</Typography>
-            <Typography variant="body1">Min Buy-In: {tableValue.minBuyIn}</Typography>
-            <Typography variant="body1">Max Buy-In: {tableValue.maxBuyIn}</Typography>
-            <Typography variant="body1">Game Type: {tableValue.gameType}</Typography>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleInfoClose}>Close</Button>
-        </DialogActions>
-      </Dialog>
+      <TableInfoDialog open={infoDialogOpen} onClose={handleInfoClose} tableValue={tableValue} />
     </Box>
   );
 };

@@ -1,6 +1,5 @@
 import moment from "moment";
-import { Moment } from "moment";
-import { GameType } from "@donk/utils";
+import { GameType, Table } from "@donk/utils";
 
 export type TableEntity = {
   id: number;
@@ -11,17 +10,6 @@ export type TableEntity = {
   max_buy_in: number;
   game_type: string;
   created_at: string;
-};
-
-export type Table = {
-  id: number;
-  name: string;
-  sbSize: number;
-  bbSize: number;
-  minBuyIn: number;
-  maxBuyIn: number;
-  gameType: GameType;
-  createdAt: Moment;
 };
 
 export const asTable = (entity: TableEntity): Table => {

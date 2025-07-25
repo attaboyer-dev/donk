@@ -1,4 +1,4 @@
-import { Table } from "@donk/database";
+import { Table } from "@donk/utils";
 
 const STARTING_DECK = [
   "As",

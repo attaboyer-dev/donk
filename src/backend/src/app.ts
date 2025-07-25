@@ -1,5 +1,6 @@
 import http from "http";
 import express from "express";
+import cors from "cors";
 import { createClient, RedisClientType } from "redis";
 
 import apiRoutes from "./api/routes";
@@ -31,13 +32,17 @@ const createAppContext = async () => {
   const app = express();
 
   // Add middleware
+  app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+  }));
   app.use(express.json());
   app.use(createContextMiddleware(appCtx));
 
   // Add routes
   app.use("/api", apiRoutes);
 
-  // Create a HTTP and WS servers
+  // Create a HTTP and WS server
   const server = http.createServer(app);
   const wsManager = new WebSocketManager(appCtx, server);
 
