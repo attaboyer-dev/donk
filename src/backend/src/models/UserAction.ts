@@ -1,4 +1,4 @@
-import { UserEvent } from "@donk/utils";
+import { UserEvent } from "src/shared/src";
 
 export default class UserAction {
   type: UserEvent;

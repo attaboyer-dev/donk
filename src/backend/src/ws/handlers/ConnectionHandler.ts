@@ -2,7 +2,7 @@ import { IncomingMessage } from "http";
 import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
 import { WsContextServer } from "../../types/WsContextServer";
 import { ServerAction } from "../../models/ServerAction";
-import { ServerEvent } from "@donk/utils";
+import { ServerEvent } from "src/shared/src";
 import { createUuid } from "../../utils/helpers";
 import { AppContext } from "../../types/AppContext";
 
@@ -61,8 +61,6 @@ export class ConnectionHandler {
       wsc.close();
       return;
     }
-
-    const gameState = await services.gameStateService.getGameState(gameId);
 
     // Send initial events
     const userJoined: ServerAction = {

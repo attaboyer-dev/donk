@@ -1,4 +1,4 @@
-import { ServerEvent, UserEvent, Player } from "@donk/utils";
+import { ServerEvent, UserEvent, Player, Table } from "../../../shared/dist";
 import { Box, Button, Typography, IconButton, Drawer, Toolbar, Divider } from "@mui/material";
 import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
@@ -131,7 +131,7 @@ const GameBoard = () => {
     9: {} as Player,
   };
 
-  const [tableValue, setTableValue] = React.useState<any>({});
+  const [tableValue, setTableValue] = React.useState<Table>(null);
   const [seatsValue, setSeatsValue] = React.useState<{ [key: number]: Player }>(emptySeats);
   const [playersValue, setPlayersValue] = React.useState([]);
   const [actionLogValue, setActionLogValue] = React.useState([]);

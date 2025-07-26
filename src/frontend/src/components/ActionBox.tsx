@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { UserEvent } from "@donk/utils";
+import { UserEvent } from "../../../shared/dist";
 import {
   Button,
   FormControl,

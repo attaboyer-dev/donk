@@ -9,9 +9,9 @@
     "moduleResolution": "Node",
     "skipLibCheck": true,
     "paths": {
-      "@donk/utils": ["src/utils/src"],
       "@donk/backend": ["src/backend/src"],
-      "@donk/database": ["src/database/src"]
+      "@donk/database": ["src/database/src"],
+      "@donk/shared": ["src/shared/src"],
     }
   }
 }

@@ -1,5 +1,5 @@
 import moment from "moment";
-import { GameType, Table } from "@donk/utils";
+import { GameType, Table } from "src/shared/src";
 
 export type TableEntity = {
   id: number;

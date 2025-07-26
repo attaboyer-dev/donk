@@ -1,4 +1,4 @@
-import { Table } from "@donk/utils";
+import { Table } from "../../../shared/dist";
 import { apiClient } from "./apiClient";
 
 interface HealthResponse {

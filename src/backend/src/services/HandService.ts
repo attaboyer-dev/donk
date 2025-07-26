@@ -1,4 +1,4 @@
-import { Table } from "@donk/utils";
+import { Table } from "src/shared/src";
 
 const STARTING_DECK = [
   "As",

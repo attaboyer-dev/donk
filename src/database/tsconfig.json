@@ -13,7 +13,7 @@
   "include": ["src"],
   "references": [
     {
-      "path": "../utils"
+      "path": "../shared"
     }
   ]
 }

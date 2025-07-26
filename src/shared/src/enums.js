@@ -1,0 +1,84 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HandType = exports.GameType = exports.Hand = exports.Position = exports.GameEvent = exports.ServerEvent = exports.UserEvent = void 0;
+var UserEvent;
+(function (UserEvent) {
+    UserEvent["Fold"] = "Fold";
+    UserEvent["Check"] = "Check";
+    UserEvent["Call"] = "Call";
+    UserEvent["Raise"] = "Raise";
+    UserEvent["Show"] = "Show";
+    UserEvent["Sit"] = "Sit";
+    UserEvent["Stand"] = "Stand";
+    UserEvent["BuyIn"] = "BuyIn";
+    UserEvent["Leave"] = "Leave";
+    UserEvent["Join"] = "Join";
+    UserEvent["Ready"] = "Ready";
+    UserEvent["Rename"] = "Rename";
+})(UserEvent || (exports.UserEvent = UserEvent = {}));
+var ServerEvent;
+(function (ServerEvent) {
+    ServerEvent["UserInfo"] = "UserInfo";
+    ServerEvent["GameState"] = "GameState";
+    ServerEvent["PlayerSat"] = "PlayerSat";
+    ServerEvent["PlayerStood"] = "PlayerStood";
+    ServerEvent["Rename"] = "Rename";
+    ServerEvent["UserJoined"] = "UserJoined";
+    ServerEvent["UserLeft"] = "UserLeft";
+    ServerEvent["PlayerBuyin"] = "PlayerBuyin";
+    ServerEvent["Ready"] = "Ready";
+})(ServerEvent || (exports.ServerEvent = ServerEvent = {}));
+var GameEvent;
+(function (GameEvent) {
+    GameEvent["AssignButton"] = "AssignButton";
+    GameEvent["MoveButton"] = "MoveButton";
+    GameEvent["PayBlind"] = "PayBlind";
+    GameEvent["AssignBlinds"] = "AssignBlinds";
+    GameEvent["StartHand"] = "StartHand";
+    GameEvent["EndHand"] = "EndHand";
+    GameEvent["StartRound"] = "StartRound";
+    GameEvent["EndRound"] = "EndRound";
+    GameEvent["StartTurn"] = "StartTurn";
+    GameEvent["EndTurn"] = "EndTurn";
+})(GameEvent || (exports.GameEvent = GameEvent = {}));
+var Position;
+(function (Position) {
+    Position["UTG"] = "UTG+0";
+    Position["UTG1"] = "UTG+1";
+    Position["UTG2"] = "UTG+2";
+    Position["UTG3"] = "UTG+3";
+    Position["UTG4"] = "UTG+4";
+    Position["UTG5"] = "UTG+5";
+    Position["UTG6"] = "UTG+6";
+    Position["UTG7"] = "UTG+7";
+    Position["UTG8"] = "UTG+8";
+    Position["UTG9"] = "UTG+9";
+})(Position || (exports.Position = Position = {}));
+var Hand;
+(function (Hand) {
+    Hand["HighCard"] = "High Card";
+    Hand["Pair"] = "Pair";
+    Hand["TwoPair"] = "Two Pair";
+    Hand["ThreeOfAKind"] = "Three of a Kind";
+    Hand["Straight"] = "Straight";
+    Hand["Flush"] = "Flush";
+    Hand["FullHouse"] = "Full House";
+    Hand["StraightFlush"] = "Straight Flush";
+    Hand["RoyalFlush"] = "Royal Flush";
+})(Hand || (exports.Hand = Hand = {}));
+var GameType;
+(function (GameType) {
+    GameType["NLHE"] = "NLHE";
+})(GameType || (exports.GameType = GameType = {}));
+var HandType;
+(function (HandType) {
+    HandType["HIGH_CARD"] = "HIGH_CARD";
+    HandType["PAIR"] = "PAIR";
+    HandType["TWO_PAIR"] = "TWO_PAIR";
+    HandType["THREE_OF_A_KIND"] = "THREE_OF_A_KIND";
+    HandType["STRAIGHT"] = "STRAIGHT";
+    HandType["FLUSH"] = "FLUSH";
+    HandType["FULL_HOUSE"] = "FULL_HOUSE";
+    HandType["STRAIGHT_FLUSH"] = "STRAIGHT_FLUSH";
+    HandType["ROYAL_FLUSH"] = "ROYAL_FLUSH";
+})(HandType || (exports.HandType = HandType = {}));

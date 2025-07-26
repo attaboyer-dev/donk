@@ -1,4 +1,4 @@
-import { ServerEvent } from "@donk/utils";
+import { ServerEvent } from "src/shared/src";
 
 export type ServerAction = {
   type: ServerEvent;
