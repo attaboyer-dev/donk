@@ -1,3 +1,4 @@
+export { HandEntity } from "./entities/HandEntity";
 export { TableEntity, asTable } from "./entities/TableEntity";
 export { UserEntity } from "./entities/UserEntity";
 export { Game, GameEntity, asGame } from "./entities/GameEntity";

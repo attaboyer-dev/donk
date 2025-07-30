@@ -1,16 +1,18 @@
 import { RedisClientType } from "redis";
-import { asTable, TableRepo } from "@donk/database";
-import GameState from "../models/GameState";
-import { IdentifyableWebSocket } from "../types/IdentifyableWebSocket";
-import Player from "../models/Player";
+import { asTable, HandRepo, TableRepo } from "@donk/database";
+import { IdentifyableWebSocket } from "../../../backend/src/types/IdentifyableWebSocket";
+import { GameState, HandState } from "@donk/shared";
+import { Player } from "@donk/shared";
 
 export class GameStateService {
   private redisClient: RedisClientType;
   private tableRepo: TableRepo;
+  private handRepo: HandRepo;
 
   constructor(redis: RedisClientType) {
     this.redisClient = redis;
     this.tableRepo = new TableRepo();
+    this.handRepo = new HandRepo();
   }
 
   async startGame(tableId: number) {
@@ -103,6 +105,33 @@ export class GameStateService {
       throw new Error(`Unable to retrieve game state with id: ${gameId}`);
     }
     return JSON.parse(gameStateJson) as GameState;
+  }
+
+  async startPlay(gameId: number): Promise<void> {
+    const gameState = await this.getGameState(gameId);
+    gameState.inPlay = true;
+    await this.setGameState(gameState);
+  }
+
+  async canStartPlay(gameId: number) {
+    const gameState = await this.getGameState(gameId);
+    let canStart = false;
+    const eligibleForPlay = gameState.players.filter(
+      (p) => p.isReady && p.assignedSeat > 0 && p.stack > 0,
+    );
+    if (eligibleForPlay.length > 2) {
+      canStart = true;
+    }
+    return canStart;
+  }
+  async beginHand(gameId: number) {
+    const gameState = await this.getGameState(gameId);
+    if (gameState.currentHand && !gameState.currentHand.isCompleted) {
+      throw new Error("Attempting to deal hand while hand is in progress");
+    }
+    const handEntity = await this.handRepo.beginHand(gameId);
+    gameState.currentHand = new HandState(handEntity);
+    await this.setGameState(gameState);
   }
 
   private async setGameState(gameState: GameState) {

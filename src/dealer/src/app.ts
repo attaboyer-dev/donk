@@ -1,12 +1,8 @@
-import http from "http";
 import express from "express";
-import cors from "cors";
 import { createClient, RedisClientType } from "redis";
 
 import apiRoutes from "./api/routes";
-import { WebSocketManager } from "./ws/WebSocketManager";
 import { createContextMiddleware } from "./api/middleware/ContextMiddleware";
-import { initServices } from "./services/bundle";
 
 const createAppContext = async () => {
   try {
@@ -15,7 +11,8 @@ const createAppContext = async () => {
     const pub = createClient() as RedisClientType;
     await Promise.all([store.connect(), sub.connect(), pub.connect()]);
     return {
-      services: initServices(store, pub, sub),
+      services: null,
+      //services: initServices(store, pub, sub),
     };
   } catch (err) {
     console.log("Error while trying to connect to redis");
@@ -24,35 +21,21 @@ const createAppContext = async () => {
 };
 
 (async () => {
-  console.log("Initializing backend server");
-  // Create the application context - a singleton available across APIs/WS calls
+  console.log("Initializing dealer server");
+  // Create the application context - a singleton available across APIs
   const appCtx = await createAppContext();
 
   // Create the express application instance
   const app = express();
 
-  // Add middleware
-  app.use(
-    cors({
-      origin: "http://localhost:3000",
-      credentials: true,
-    }),
-  );
   app.use(express.json());
   app.use(createContextMiddleware(appCtx));
 
   // Add routes
   app.use("/api", apiRoutes);
 
-  // Create a HTTP and WS server
-  const server = http.createServer(app);
-  const _wsManager = new WebSocketManager(appCtx, server);
-
-  // For local testing - start a game
-  await appCtx.services.gameStateService.startGame(1);
-
   // Start the server, listening on the specified port
-  server.listen(8080, () => {
-    console.log(`Server is running on http://localhost:8080`);
+  app.listen(8081, () => {
+    console.log(`Dealer server is running on http://localhost:8081`);
   });
 })();

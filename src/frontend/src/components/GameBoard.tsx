@@ -1,4 +1,4 @@
-import { ServerEvent, UserEvent, Player, Table } from "../../../shared/dist";
+import { ServerEvent, ServerMessage, UserEvent, Player, Table } from "@donk/shared";
 import { Box, Button, Typography, IconButton, Drawer, Toolbar, Divider } from "@mui/material";
 import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
@@ -20,9 +20,7 @@ const joinMessage = () => ({ type: UserEvent.Join });
 const renameMessage = (name) => ({ type: UserEvent.Rename, val: name });
 const readyMessage = () => ({ type: UserEvent.Ready });
 
-let ws = null;
-
-const sendWSMessage = (action: UserEvent, val: any) => {
+const sendWSMessage = (ws: WebSocket | null, action: UserEvent, val: any) => {
   if (!ws) return;
 
   let message = "";
@@ -58,7 +56,7 @@ const sendWSMessage = (action: UserEvent, val: any) => {
   ws.send(message);
 };
 
-const eventToLog = (event) => {
+const eventToLog = (event: ServerMessage) => {
   const { type, update } = event;
   let toReturn = "";
   if (type === ServerEvent.UserJoined) {
@@ -77,37 +75,37 @@ const eventToLog = (event) => {
     toReturn = `Player - ${update.name} - has added ${update.amount} to their stack`;
   } else if (type === ServerEvent.Ready) {
     toReturn = `Player - ${update.name} - is ready`;
+  } else if (type === ServerEvent.HandStarted) {
+    toReturn = "A new hand has started";
   }
   return toReturn;
 };
 
-// Set empty functions until React Hooks are set
-let onTableUpdateHandler = (event: any) => {};
-let onUserUpdateHandler = (event: any) => {};
-let onPlayerSatHandler = (event: any) => {};
-let onRenameHandler = (event: any) => {};
-let onEventLogHandler = (event: any) => {};
-let onNextStateHandler = (event: any) => {};
-
-const setupWebSocketListeners = () => {
-  if (!ws) return;
-
-  ws.addEventListener("message", (event) => {
-    let eventJSON = JSON.parse(event.data);
-    //  console.log("server message: %o", eventJSON);
-    if (eventJSON.type === ServerEvent.GameState) {
-      onTableUpdateHandler(eventJSON);
-    } else if (eventJSON.type === ServerEvent.UserInfo) {
-      onUserUpdateHandler(eventJSON);
-    } else if (eventJSON.type === ServerEvent.PlayerSat) {
-      onPlayerSatHandler(eventJSON);
-    } else if (eventJSON.type === ServerEvent.Rename) {
-      onRenameHandler(eventJSON);
+const setupWebSocketListeners = (handlers: any) => {
+  const messageHandler = (event) => {
+    let eventData = JSON.parse(event.data) as ServerMessage;
+    const { type } = eventData;
+    console.log("message received", eventData.update);
+    if (type === ServerEvent.GameState) {
+      handlers.onTableUpdate(eventData);
+    } else if (type === ServerEvent.UserInfo) {
+      handlers.onUserUpdate(eventData);
+    } else if (type === ServerEvent.PlayerSat) {
+      handlers.onPlayerSat(eventData);
+    } else if (type === ServerEvent.Rename) {
+      handlers.onRename(eventData);
+    } else if (type === ServerEvent.HandStarted) {
+      handlers.onHandStart(eventData);
     }
 
-    onNextStateHandler(eventJSON);
-    onEventLogHandler(eventJSON);
-  });
+    handlers.onNextState(eventData);
+    handlers.onEventLog(eventData);
+  };
+
+  console.log("adding on event");
+  console.log('Event listener added for "message"');
+
+  return messageHandler;
 };
 
 const GameBoard = () => {
@@ -118,6 +116,8 @@ const GameBoard = () => {
 
   const [actionLogOpen, setActionLogOpen] = React.useState(true);
   const handleToggleActionLog = () => setActionLogOpen(!actionLogOpen);
+
+  const wsRef = React.useRef<WebSocket | null>(null);
 
   const emptySeats: { [key: number]: Player } = {
     1: {} as Player,
@@ -150,63 +150,64 @@ const GameBoard = () => {
 
     fetchTableData();
 
-    ws = new WebSocket("ws://localhost:8080/socket?gameId=1");
-    ws.onopen = () => console.log("WebSocket open");
-    setupWebSocketListeners();
+    // Create WebSocket connection
+    wsRef.current = new WebSocket("ws://localhost:8080/socket?gameId=1");
+    wsRef.current.onopen = () => console.log("WebSocket open");
+
+    // Setup event handlers
+    const handlers = {
+      onTableUpdate: (event: any) => setTableValue(event.update.table),
+      onUserUpdate: (event: any) => setUserValue(event.update.state),
+      onPlayerSat: (event: any) => {
+        const { location, name } = event.update;
+        const { players } = event.nextState;
+        setPlayersValue(players);
+        const nextSeats = { ...seatsValue };
+        nextSeats[location] = players[players.findIndex((player: any) => player.name === name)];
+        setSeatsValue(nextSeats);
+      },
+      onRename: (event: any) => {
+        const { prevName, nextName } = event.update;
+        if (userValue && userValue.name === prevName) {
+          setUserValue({ ...userValue, name: nextName });
+        }
+      },
+      onHandStart: (event: any) => {
+        const { currentHand } = event.nextState;
+        console.log("currentHand", currentHand);
+      },
+      onNextState: (event: any) => {
+        const { players } = event.nextState;
+        if (userValue && event.type !== ServerEvent.Rename) {
+          const userIndex = players.findIndex((p: any) => p.name === userValue.name);
+          setUserValue(players[userIndex]);
+        }
+        const nextSeats = { ...emptySeats };
+        players.forEach((p: any) => {
+          if (p.assignedSeat > 0) {
+            nextSeats[p.assignedSeat] = p;
+          }
+        });
+        setPlayersValue(players);
+        setSeatsValue(nextSeats);
+      },
+      onEventLog: (event: ServerMessage) => {
+        setActionLogValue((prev) => [...prev, eventToLog(event)]);
+      },
+    };
+
+    const messageHandler = setupWebSocketListeners(handlers);
+    wsRef.current.onmessage = messageHandler;
 
     return () => {
-      if (ws) {
-        ws.close();
+      if (wsRef.current) {
+        wsRef.current.removeEventListener("message", messageHandler);
+        wsRef.current.close();
       }
     };
   }, [api]);
 
-  onTableUpdateHandler = (event) => {
-    setTableValue(event.update.table);
-  };
-
   const [userValue, setUserValue] = React.useState<any>(null);
-  onUserUpdateHandler = (event) => {
-    setUserValue(event.update.state);
-  };
-
-  // Update client state based on most recent server state
-  onNextStateHandler = (event) => {
-    const { players } = event.nextState;
-    if (userValue && event.type !== ServerEvent.Rename) {
-      // RENAME updates the UserValue in it's own manner
-      const userIndex = players.findIndex((p) => p.name === userValue.name);
-      setUserValue(players[userIndex]);
-    }
-    const nextSeats = { ...emptySeats };
-    players.forEach((p) => {
-      if (p.assignedSeat > 0) {
-        nextSeats[p.assignedSeat] = p;
-      }
-    });
-    setPlayersValue(players);
-    setSeatsValue(nextSeats);
-  };
-
-  onPlayerSatHandler = (event) => {
-    const { location, name } = event.update;
-    const { players } = event.nextState;
-    setPlayersValue(players);
-    const nextSeats = { ...seatsValue };
-    nextSeats[location] = players[players.findIndex((player) => player.name === name)];
-    setSeatsValue(nextSeats);
-  };
-
-  onRenameHandler = (event) => {
-    const { prevName, nextName } = event.update;
-    if (userValue.name === prevName) {
-      setUserValue({ ...userValue, name: nextName });
-    }
-  };
-
-  onEventLogHandler = (event) => {
-    setActionLogValue([...actionLogValue, eventToLog(event)]);
-  };
 
   // Calculate seat position in oval layout
   const calculateSeatPosition = (seatIndex: number, totalSeats: number) => {
@@ -374,7 +375,7 @@ const GameBoard = () => {
                     height: { xs: "24px", sm: "28px", md: "32px" },
                   }}
                   disabled={isDisabled(value)}
-                  onClick={() => sendWSMessage(UserEvent.Sit, key)}
+                  onClick={() => sendWSMessage(wsRef.current, UserEvent.Sit, key)}
                 >
                   Sit
                 </Button>
@@ -390,7 +391,7 @@ const GameBoard = () => {
                     borderColor: "white",
                   }}
                   disabled={!canStand(value)}
-                  onClick={() => sendWSMessage(UserEvent.Stand, key)}
+                  onClick={() => sendWSMessage(wsRef.current, UserEvent.Stand, key)}
                 >
                   Stand
                 </Button>
@@ -511,7 +512,9 @@ const GameBoard = () => {
           {renderSeats()}
         </Box>
 
-        <ActionBox sendWSMessage={sendWSMessage} />
+        <ActionBox
+          sendWSMessage={(action: UserEvent, val: any) => sendWSMessage(wsRef.current, action, val)}
+        />
       </Box>
 
       <TableInfoDialog open={infoDialogOpen} onClose={handleInfoClose} tableValue={tableValue} />

@@ -23,6 +23,7 @@ export enum ServerEvent {
   UserLeft = "UserLeft", // Rename to PlayerLeft
   PlayerBuyin = "PlayerBuyin",
   Ready = "Ready",
+  HandStarted = "HandStarted",
 }
 
 export enum GameEvent {

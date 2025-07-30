@@ -1,18 +1,22 @@
 import { IncomingMessage } from "http";
 import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
 import { WsContextServer } from "../../types/WsContextServer";
-import { ServerAction } from "../../models/ServerAction";
-import { ServerEvent } from "src/shared/src";
+import { ServerEvent, ServerMessage } from "@donk/shared";
 import { createUuid } from "../../utils/helpers";
 import { AppContext } from "../../types/AppContext";
 
 export class ConnectionHandler {
   constructor(private appContext: AppContext) {}
 
-  private addIdentityToClient(wsc: IdentifyableWebSocket, gameId: number) {
+  private addIdentityToClient(
+    wsc: IdentifyableWebSocket,
+    gameId: number,
+    gameEventHandler: (message: string) => Promise<void>,
+  ) {
     wsc.id = createUuid();
     wsc.name = wsc.id;
     wsc.gameId = gameId;
+    wsc.gameEventHandler = gameEventHandler;
   }
 
   async handleConnection(
@@ -33,26 +37,21 @@ export class ConnectionHandler {
     }
 
     // Set up Redis subscription for game events
-    const handleMessage = async (message: string) => {
-      // Only the most recent callback is used against a channel (game-event:<id>)
-      // Therefore, ensure ALL clients associated to the game are included
-      const clientsInGame = [...wss.clients].filter(
-        (client) => (client as IdentifyableWebSocket).gameId === gameId,
-      );
-
-      const action: ServerAction = JSON.parse(message);
+    const handleGameEvent = async (message: string) => {
+      const action: ServerMessage = JSON.parse(message);
       action.nextState = await this.appContext.services.gameStateService.getGameState(gameId);
 
-      clientsInGame.forEach((client) => {
-        client.send(JSON.stringify(action));
-      });
+      wsc.send(JSON.stringify(action));
       console.log("Message received by %o: %o", wsc.name, message);
     };
 
-    await services.eventRelayService.subscribeToGameEvents(gameId, handleMessage);
+    await services.eventRelayService.subscribeToGameEvents(gameId, handleGameEvent);
+
+    // Store the handler for cleanup
+    wsc.gameEventHandler = handleGameEvent;
 
     // Initialize WebSocket client properties
-    this.addIdentityToClient(wsc, gameId);
+    this.addIdentityToClient(wsc, gameId, handleGameEvent);
 
     const player = await services.gameStateService.addPlayer(gameId, wsc);
 
@@ -63,12 +62,12 @@ export class ConnectionHandler {
     }
 
     // Send initial events
-    const userJoined: ServerAction = {
+    const userJoined: ServerMessage = {
       type: ServerEvent.UserJoined,
       update: { name: wsc.name },
     };
 
-    const userDetails: ServerAction = {
+    const userDetails: ServerMessage = {
       type: ServerEvent.UserInfo,
       update: { state: player },
     };
@@ -76,19 +75,26 @@ export class ConnectionHandler {
     await services.eventRelayService.publishGameEvent(gameId, userJoined);
     await services.eventRelayService.publishGameEvent(gameId, userDetails);
 
-    console.log("New client connection attempt succeeded");
+    console.log("New client connected successfully");
     console.log("# of clients connected: ", wss.clients.size);
   }
 
   async handleClose(wsc: IdentifyableWebSocket): Promise<void> {
-    console.log(`Websocket connection closed for ${wsc.name}`);
-    await this.appContext.services.gameStateService.removePlayer(wsc.gameId, wsc);
+    const { services } = this.appContext;
 
-    const playerLeft: ServerAction = {
+    // Unsubscribe from game events
+    if (wsc.gameEventHandler) {
+      await services.eventRelayService.unsubscribeFromGameEvents(wsc.gameId, wsc.gameEventHandler);
+    }
+
+    await services.gameStateService.removePlayer(wsc.gameId, wsc);
+
+    const playerLeft: ServerMessage = {
       type: ServerEvent.UserLeft,
       update: { name: wsc.name },
     };
 
-    await this.appContext.services.eventRelayService.publishGameEvent(wsc.gameId, playerLeft);
+    await services.eventRelayService.publishGameEvent(wsc.gameId, playerLeft);
+    console.log(`Websocket connection closed for ${wsc.name}`);
   }
 }

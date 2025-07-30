@@ -20,9 +20,9 @@ export class HandRepo {
     return result.rows[0] || null;
   }
 
-  async addHand(hand: { gameId: number }) {
+  async beginHand(gameId: number) {
     const result = await PgPool.query("INSERT INTO hands (game_id) VALUES ($1) RETURNING *", [
-      hand.gameId,
+      gameId,
     ]);
     return result.rows[0];
   }

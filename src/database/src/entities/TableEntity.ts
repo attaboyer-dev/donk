@@ -1,5 +1,5 @@
 import moment from "moment";
-import { GameType, Table } from "src/shared/src";
+import { Moment } from "moment";
 
 export type TableEntity = {
   id: number;
@@ -12,6 +12,17 @@ export type TableEntity = {
   created_at: string;
 };
 
+export type Table = {
+  id: number;
+  name: string;
+  sbSize: number;
+  bbSize: number;
+  minBuyIn: number;
+  maxBuyIn: number;
+  gameType: any;
+  createdAt: Moment;
+};
+
 export const asTable = (entity: TableEntity): Table => {
   const { id, name, sb_size, bb_size, min_buy_in, max_buy_in, game_type, created_at } = entity;
   return {
@@ -21,7 +32,7 @@ export const asTable = (entity: TableEntity): Table => {
     bbSize: bb_size,
     minBuyIn: min_buy_in,
     maxBuyIn: max_buy_in,
-    gameType: game_type as GameType,
+    gameType: game_type,
     createdAt: moment(created_at),
   };
 };

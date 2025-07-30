@@ -8,7 +8,6 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@donk/shared": "workspace:^",
     "moment": "^2.30",
     "pg": "^8.16"
   },

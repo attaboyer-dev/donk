@@ -225,3 +225,74 @@ TODO:
   - Add logic for shuffle, dealing, getting cards out
     - Ideally, make it flexible for OMAHA and others
   - Add in user actions for fold, call, raise, etc.
+
+Flow (Simplified):
+
+A user connects for a specific game. Upon doing so, they register against a "game-events" channel in
+Redis, used by all the players. Their events (Rename, Sit, Buy-in) are broadcasted outward, prompting
+other users to request the most recent state.
+
+As a result, any change triggered by a user updates state and publishes a message. The act of publishing
+a message prompts all users, even the initiator, to get the active state.
+
+- How to deal with an active hands?
+- Do we differentiate hand state versus game state?
+- If you're at the table, nothing changes from your perspective.
+  - If you're not in the hand, you're not prompted to act
+  - If you're out of the hand, you're not prompted to act
+  - Cards are only sent to the relevant player.
+
+Decision: Keep it in GameState
+
+Hand Flow:
+
+- Game is marked as "in play".
+- Hand is generated.
+  - Hand is associated to each qualifying player
+
+Talking about the Dealer Service
+
+The backend server sends an API call to the dealer service. Should probably only include the game id; deferring hand creation and management to the dealer.
+Which makes sense, because a dealer RUNS hands after all. What happens when the dealer service receives the API call? It needs a way to listen to player actions
+and it needs a way to propogate its server actions to player. We have this in the form of the "game-events" channel right now. That could get cluttered
+if the dealer is listening to that all the time, as there may be lots of non-relevant updates. Similar, once we get chat in place, same problem.
+It should be super clear from the type of message received by the backend API who needs to act. We could have a hierarchy of types, or maybe just a sub-type.
+I digress.
+
+Core implementation point: another channel dedicated to "hand-events" (and probably one for chats).
+
+The dealer server subscribes to the "hand-event" channel. The backend API AND dealer server publish to the channel. A consideration: for a hand action like,
+"Blinds Posted", what channel does the message go to, and how are the players informed of the details?
+
+Example Flow (3 players)
+
+- Button moves
+- Small blind posted
+- Big blind posted
+- Button folds
+- Small blind folds
+- Big blind wins
+
+Each of these hand actions needs to be stored. This will be relevant for hand-history in days to come. It's also relevant because each should generate a
+message on the "action log" so players can see what happened.
+
+I think it make make more sense for "hand-events" to be a channel that the backend AND dealer publish to.
+
+"Button moves" example:
+
+- Dealer initalizes the new hand
+- Button rotates to the next available player, or is assigned
+- "GameState" gets updated; button applied, but a "hand-event" message is sent
+  - This is because anything that would be considered a "hand action" sends against the "hand-event" channel.
+- Subscribers to the hand-event channel... okay that's right, how are we managing
+
+- "Hand-event" gets published
+- Cards are dealt out to all the players (game-event)
+  - Each message subscriber in the backend MUST filter card data to only include the subscriber's cards.
+  - Message sent: "Cards dealt"; event prompts user to check their cards in the game-state
+-
+
+Decisions:
+
+- Create another channel for hand-events
+- Player needs to be updated to include active bet size
