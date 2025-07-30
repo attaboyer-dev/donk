@@ -1,6 +1,7 @@
 import { GameEntity, GameRepo, TableRepo } from "@donk/database";
 import { GameState } from "@donk/shared";
-import { asGame, asTable } from "@donk/backend-core";
+import { asTable } from "../converters/tableConverter";
+import { asGame } from "../converters/gameConverter";
 
 export class GameService {
   private gameRepo: GameRepo;

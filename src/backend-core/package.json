@@ -10,6 +10,7 @@
   "dependencies": {
     "@donk/database": "workspace:^",
     "@donk/shared": "workspace:^",
-    "moment": "^2.30"
+    "moment": "^2.30",
+    "redis": "^5.6"
   }
 }

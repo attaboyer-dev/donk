@@ -1,8 +1,7 @@
-import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
+import { AppContext, IdentifyableWebSocket } from "@donk/backend-core";
 import UserAction from "../../models/UserAction";
 import { GameActionProcessor } from "./GameActionProcessor";
 import { HandActionProcessor } from "./HandActionProcessor";
-import { AppContext } from "../../types/AppContext";
 
 export class MessageHandler {
   private gameActionProcessor: GameActionProcessor;

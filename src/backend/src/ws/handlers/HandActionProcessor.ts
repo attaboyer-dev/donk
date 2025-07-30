@@ -1,7 +1,6 @@
 import { UserEvent } from "@donk/shared";
-import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
+import { AppContext, IdentifyableWebSocket } from "@donk/backend-core";
 import UserAction from "../../models/UserAction";
-import { AppContext } from "../../types/AppContext";
 
 export class HandActionProcessor {
   constructor(private appContext: AppContext) {}

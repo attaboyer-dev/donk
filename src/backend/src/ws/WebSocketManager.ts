@@ -1,7 +1,6 @@
 import { WebSocketServer } from "ws";
-import { IdentifyableWebSocket } from "../types/IdentifyableWebSocket";
+import { AppContext, IdentifyableWebSocket } from "@donk/backend-core";
 import { WsContextServer } from "../types/WsContextServer";
-import { AppContext } from "../types/AppContext";
 import { ConnectionHandler } from "./handlers/ConnectionHandler";
 import { MessageHandler } from "./handlers/MessageHandler";
 

@@ -1,8 +1,7 @@
 import { ServerEvent, UserEvent } from "@donk/shared";
-import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
+import { AppContext, IdentifyableWebSocket } from "@donk/backend-core";
 import UserAction from "../../models/UserAction";
 import { ServerMessage } from "@donk/shared";
-import { AppContext } from "../../types/AppContext";
 
 export class GameActionProcessor {
   constructor(private appContext: AppContext) {}

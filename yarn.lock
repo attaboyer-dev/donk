@@ -130,12 +130,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@donk/backend-core@workspace:src/backend-core":
+"@donk/backend-core@workspace:^, @donk/backend-core@workspace:src/backend-core":
   version: 0.0.0-use.local
   resolution: "@donk/backend-core@workspace:src/backend-core"
   dependencies:
     "@donk/database": "workspace:^"
     "@donk/shared": "workspace:^"
+    moment: "npm:^2.30"
+    redis: "npm:^5.6"
   languageName: unknown
   linkType: soft
 
@@ -143,6 +145,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@donk/backend@workspace:src/backend"
   dependencies:
+    "@donk/backend-core": "workspace:^"
     "@donk/shared": "workspace:^"
     "@types/cors": "npm:^2"
     "@types/express": "npm:^5.0"

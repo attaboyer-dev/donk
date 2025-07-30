@@ -1,4 +1,4 @@
-import { Table } from "src/shared/src";
+import { Table } from "@donk/shared";
 
 const STARTING_DECK = [
   "As",

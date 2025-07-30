@@ -1,9 +1,8 @@
 import { IncomingMessage } from "http";
-import { IdentifyableWebSocket } from "../../types/IdentifyableWebSocket";
-import { WsContextServer } from "../../types/WsContextServer";
+import { AppContext, IdentifyableWebSocket } from "@donk/backend-core";
 import { ServerEvent, ServerMessage } from "@donk/shared";
+import { WsContextServer } from "../../types/WsContextServer";
 import { createUuid } from "../../utils/helpers";
-import { AppContext } from "../../types/AppContext";
 
 export class ConnectionHandler {
   constructor(private appContext: AppContext) {}

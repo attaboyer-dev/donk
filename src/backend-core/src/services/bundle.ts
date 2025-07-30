@@ -1,4 +1,4 @@
-import { RedisClientType, createClient } from "redis";
+import { RedisClientType } from "redis";
 import { EventRelayService } from "./EventRelayService";
 import { GameService } from "./GameService";
 import { GameStateService } from "./GameStateService";
