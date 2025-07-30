@@ -1,0 +1,1 @@
+- Create helper functions for checking and ensuring output generate zero records, one record, zero-or-one record

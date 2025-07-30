@@ -1,8 +1,8 @@
 // An atomic entity representing a single game action in a hand
 export type HandActionEntity = {
   id: number;
-  handId: number;
-  actionType: string; // TODO: Convert to enum
+  hand_id: number;
+  action_type: string;
   value: any; // Dependent on the action type
-  createdAt: string;
+  created_at: string;
 };
