@@ -1,5 +1,6 @@
-import { asGame, GameEntity, GameRepo, asTable, TableRepo } from "@donk/database";
+import { GameEntity, GameRepo, TableRepo } from "@donk/database";
 import { GameState } from "@donk/shared";
+import { asGame, asTable } from "@donk/backend-core";
 
 export class GameService {
   private gameRepo: GameRepo;

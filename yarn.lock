@@ -130,6 +130,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@donk/backend-core@workspace:src/backend-core":
+  version: 0.0.0-use.local
+  resolution: "@donk/backend-core@workspace:src/backend-core"
+  dependencies:
+    "@donk/database": "workspace:^"
+    "@donk/shared": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@donk/backend@workspace:src/backend":
   version: 0.0.0-use.local
   resolution: "@donk/backend@workspace:src/backend"
@@ -151,7 +160,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@donk/database@workspace:src/database"
   dependencies:
-    "@donk/shared": "workspace:^"
     "@types/pg": "npm:^8"
     moment: "npm:^2.30"
     pg: "npm:^8.16"

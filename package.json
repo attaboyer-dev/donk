@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": [
     "src/backend",
+    "src/backend-core",
     "src/database",
     "src/dealer",
     "src/frontend",

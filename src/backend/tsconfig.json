@@ -13,7 +13,7 @@
     "composite": true,
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": ["src", "../shared/src/models/Pot.ts", "../shared/src/services"],
+  "include": ["src", "../shared/src/types/Pot.ts", "../shared/src/services"],
   "references": [
     {
       "path": "../shared"

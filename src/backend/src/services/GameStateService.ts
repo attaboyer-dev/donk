@@ -1,8 +1,8 @@
 import { RedisClientType } from "redis";
-import { asTable, HandRepo, TableRepo } from "@donk/database";
+import { asTable } from "@donk/backend-core";
+import { HandRepo, TableRepo } from "@donk/database";
+import { GameState, HandState, Player } from "@donk/shared";
 import { IdentifyableWebSocket } from "../../../backend/src/types/IdentifyableWebSocket";
-import { GameState, HandState } from "@donk/shared";
-import { Player } from "@donk/shared";
 
 export class GameStateService {
   private redisClient: RedisClientType;

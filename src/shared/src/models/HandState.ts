@@ -1,5 +1,5 @@
 import { Player } from "./Player";
-import { Pot } from "./Pot";
+import { Pot } from "../types/Pot";
 
 export class HandState {
   id: number;

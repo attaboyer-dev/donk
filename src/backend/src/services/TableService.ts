@@ -1,4 +1,5 @@
-import { asTable, TableRepo } from "@donk/database";
+import { asTable } from "@donk/backend-core";
+import { TableRepo } from "@donk/database";
 
 export class TableService {
   private tableRepo: TableRepo;
