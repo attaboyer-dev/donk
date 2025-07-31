@@ -1,3 +1,5 @@
+NOTE: Slash zone for thoughts
+
 // Table is created
 // Player 1 (Owner) joins the table
 // Player 2 joins the table

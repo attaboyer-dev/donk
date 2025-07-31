@@ -1,4 +1,6 @@
-## A poker app
+## A poker app for the people
+
+# NOTE (7/31): WIP, local builds will also need redis setup (pub/sub, game-state store) and docker/postgres (database)
 
 # Local install
 
