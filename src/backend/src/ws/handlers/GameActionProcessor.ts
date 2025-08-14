@@ -1,5 +1,5 @@
-import { ServerEvent, UserEvent } from "@donk/shared";
-import { AppContext, IdentifyableWebSocket } from "@donk/backend-core";
+import { GameEvent, ServerEvent, UserEvent } from "@donk/shared";
+import { AppContext, HandEvent, IdentifyableWebSocket } from "@donk/backend-core";
 import UserAction from "../../models/UserAction";
 import { ServerMessage } from "@donk/shared";
 
@@ -104,21 +104,13 @@ export class GameActionProcessor {
 
     if (await gameStateService.canStartPlay(gameId)) {
       await gameStateService.startPlay(gameId);
-      await gameStateService.beginHand(gameId);
 
-      const startHandDetails: ServerMessage = {
-        type: ServerEvent.HandStarted,
-        update: {},
-      };
+      const event = {
+        action: GameEvent.StartHand,
+        payload: JSON.stringify({ gameId }),
+      } as HandEvent;
 
-      await eventRelayService.publishGameEvent(gameId, startHandDetails);
-
-      // Inform players "play" has started
-      // Create a new hand
-      /*
-        Decided 
-      */
-      // Register
+      await eventRelayService.publishHandEvent(event);
     }
   }
 }

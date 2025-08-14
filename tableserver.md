@@ -298,3 +298,29 @@ Decisions:
 
 - Create another channel for hand-events
 - Player needs to be updated to include active bet size
+
+Alright, back to where I was. Recap on hand strategy:
+
+- Reuse the game-events notifications system
+- Client sends message to 'backend' (to rename) with action
+- 'backend' republishes message in a tweaked format for 'dealer'
+- 'dealer' receives and handles the message. If valid, produces out an update
+- 'backend' sees the updates, gets game state, forwards it to client
+- client ui updates
+
+Reminders:
+
+- we don't want the 'backend' to process the message, as we'll need a long-lived entity for managing games, etc.
+- Actually, the problem is more that we'll need a long-term game engine
+
+Game Engine:
+
+We're building out 'dealer' to be a RESTful service that can, when receving
+
+Ugh. Okay, game-events WORK currently because state is externalized in Redis, and client actions are acknowledged
+processed, stored, and we publish when they're updated.
+
+For hand state, it's not that different. For client-triggered events, it's the same thing + an extra hop so it
+gets to the dealer service. The problem is that the dealer service will need to handle it's own things on a scheduled basis.
+Example would be if a user is supposed to act within 30 seconds, and they don't. Should be treated as a fold. 
+

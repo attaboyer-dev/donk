@@ -1,8 +1,9 @@
 import { RedisClientType } from "redis";
 import { asTable } from "../converters/tableConverter";
 import { HandRepo, TableRepo } from "@donk/database";
-import { GameState, HandState, Player } from "@donk/shared";
+import { GameEvent, GameState, HandState, Player } from "@donk/shared";
 import { IdentifyableWebSocket } from "../types/IdentifyableWebSocket";
+import { DEALER_EVENT_STREAM } from "../utils/consts";
 
 export class GameStateService {
   private redisClient: RedisClientType;
@@ -130,7 +131,15 @@ export class GameStateService {
       throw new Error("Attempting to deal hand while hand is in progress");
     }
     const handEntity = await this.handRepo.beginHand(gameId);
-    gameState.currentHand = new HandState(handEntity);
+    const handState = new HandState(handEntity);
+    gameState.currentHand = handState;
+    await this.setGameState(gameState);
+  }
+
+  // TODO: For initial assignment, we want to deal out cards and use the high-card as first button
+  async adjustButton(gameId: number) {
+    const gameState = await this.getGameState(gameId);
+    gameState.isButtonAssigned() ? gameState.rotateButton() : gameState.initializeButton();
     await this.setGameState(gameState);
   }
 

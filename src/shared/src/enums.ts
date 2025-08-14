@@ -27,6 +27,7 @@ export enum ServerEvent {
 }
 
 export enum GameEvent {
+  StartPlay = "StartPlay",
   AssignButton = "AssignButton",
   MoveButton = "MoveButton",
   PayBlind = "PayBlind",
@@ -37,6 +38,11 @@ export enum GameEvent {
   EndRound = "EndRound",
   StartTurn = "StartTurn",
   EndTurn = "EndTurn",
+  Fold = "Fold",
+  Check = "Check",
+  Call = "Call",
+  Raise = "Raise",
+  Show = "Show",
 }
 
 export enum Position {

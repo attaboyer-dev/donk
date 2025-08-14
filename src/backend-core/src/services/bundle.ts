@@ -5,8 +5,10 @@ import { GameStateService } from "./GameStateService";
 import { HandService } from "./HandService";
 import { UserService } from "./UserService";
 import { TableService } from "./TableService";
+import { DealerService } from "./DealerService";
 
 export type ServiceBundle = {
+  dealerService: DealerService;
   eventRelayService: EventRelayService;
   handService: HandService;
   gameService: GameService;
@@ -21,7 +23,8 @@ export const initServices = (
   subscriber: RedisClientType,
 ): ServiceBundle => {
   return {
-    eventRelayService: new EventRelayService(publisher, subscriber),
+    dealerService: new DealerService(store),
+    eventRelayService: new EventRelayService(store, publisher, subscriber),
     handService: new HandService(),
     gameService: new GameService(),
     gameStateService: new GameStateService(store),

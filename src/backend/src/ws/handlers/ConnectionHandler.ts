@@ -37,11 +37,10 @@ export class ConnectionHandler {
 
     // Set up Redis subscription for game events
     const handleGameEvent = async (message: string) => {
+      console.log("Message received by %o: %o", wsc.name, message);
       const action: ServerMessage = JSON.parse(message);
       action.nextState = await this.appContext.services.gameStateService.getGameState(gameId);
-
       wsc.send(JSON.stringify(action));
-      console.log("Message received by %o: %o", wsc.name, message);
     };
 
     await services.eventRelayService.subscribeToGameEvents(gameId, handleGameEvent);

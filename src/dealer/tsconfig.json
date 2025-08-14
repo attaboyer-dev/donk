@@ -20,6 +20,9 @@
     },
     {
       "path": "../database"
+    },
+    {
+      "path": "../backend-core"
     }
   ]
 }
