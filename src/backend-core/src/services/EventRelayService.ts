@@ -31,7 +31,13 @@ export class EventRelayService {
     await this.subscriber.unsubscribe(`game-events:${gameId}`, handler);
   }
 
-  async publishHandEvent(event: HandEvent) {
-    await this.store.xAdd(DEALER_EVENT_STREAM, "*", event);
+  async publishHandEvent(event: HandEvent, timeout?: number) {
+    if (timeout) {
+      setTimeout(async () => {
+        await this.store.xAdd(DEALER_EVENT_STREAM, "*", event);
+      }, timeout);
+    } else {
+      await this.store.xAdd(DEALER_EVENT_STREAM, "*", event);
+    }
   }
 }

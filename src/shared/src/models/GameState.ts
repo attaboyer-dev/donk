@@ -1,3 +1,4 @@
+import { Game } from "../types/Game";
 import { Table } from "../types/Table";
 import { HandState } from "./HandState";
 import { Player } from "./Player";
@@ -10,50 +11,47 @@ export class GameState {
   open: boolean;
   inPlay: boolean;
 
-  constructor(id: number, table: any) {
+  constructor(
+    id: number,
+    table: any,
+    players?: any,
+    currentHand?: HandState,
+    open?: boolean,
+    inPlay?: boolean,
+  ) {
     this.id = id;
     this.table = table;
-    this.players = []; // Active players at the table
-    this.currentHand = null;
-    this.open = true; // Whether the game is playable
-    this.inPlay = false; // Whether the game is currently serving hands
+    this.players = players || []; // Active players at the table
+    this.currentHand = currentHand || null;
+    this.open = open || true; // Whether the game is playable
+    this.inPlay = inPlay || false; // Whether the game is currently serving hands
   }
 
-  isButtonAssigned = () => !!this.players.find((player) => player.isBtn);
+  static fromString(str: string): GameState {
+    const obj = JSON.parse(str);
+    return new GameState(
+      obj.id,
+      obj.table,
+      obj.players,
+      obj.currentHand ? new HandState(obj.currentHand.id, obj.currentHand.deck, obj.currentHand.board, obj.currentHand.pots) : undefined,
+      obj.open,
+      obj.inPlay,
+    );
+  }
 
-  rotateButton = () => {
-    if (this.players.length < 2) return;
+  static fromGameAndTable(game: Game, table: Table) {
+    return new GameState(game.id, table);
+  }
 
-    const currentBtnIdx = this.players.findIndex((p) => p.isBtn);
-    if (currentBtnIdx !== -1) {
-      this.players[currentBtnIdx].isBtn = false;
-    }
-
-    let nextIdx = currentBtnIdx;
-    let found = false;
-    const n = this.players.length;
-    for (let i = 1; i <= n; i++) {
-      const idx = (currentBtnIdx + i) % n;
-      const player = this.players[idx];
-      if (player.isEligibleForHand()) {
-        nextIdx = idx;
-        found = true;
-        break;
+  // TODO: Find a way to make this conditional for game types
+  dealCards() {
+    const activePlayers = this.players.filter((p) => p.isInHand);
+    activePlayers.forEach((p) => {
+      const cardOne = this.currentHand!.deal();
+      const cardTwo = this.currentHand!.deal();
+      if (cardOne && cardTwo) {
+        p.cards.push(cardOne, cardTwo);
       }
-    }
-
-    if (found) {
-      this.players[nextIdx].isBtn = true;
-    }
-  };
-
-  initializeButton = () => {
-    const eligiblePlayers = this.players.filter((player) => player.isEligibleForHand());
-    if (eligiblePlayers.length < 2) return;
-
-    const randomIdx = Math.floor(Math.random() * eligiblePlayers.length);
-    const chosenPlayer = eligiblePlayers[randomIdx];
-
-    chosenPlayer.isBtn = true;
-  };
+    });
+  }
 }

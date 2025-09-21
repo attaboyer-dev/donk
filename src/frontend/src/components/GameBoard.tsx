@@ -1,4 +1,4 @@
-import { ServerEvent, ServerMessage, UserEvent, Player, Table } from "@donk/shared";
+import { ServerEvent, ServerMessage, UserEvent, Player, Table, Position } from "@donk/shared";
 import { Box, Button, Typography, IconButton, Drawer, Toolbar, Divider } from "@mui/material";
 import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
@@ -77,6 +77,10 @@ const eventToLog = (event: ServerMessage) => {
     toReturn = `Player - ${update.name} - is ready`;
   } else if (type === ServerEvent.HandStarted) {
     toReturn = "A new hand has started";
+  } else if (type === ServerEvent.ButtonMoved) {
+    toReturn = "The button has been moved";
+  } else if (type === ServerEvent.BlindsPosted) {
+    toReturn = "The blinds have been posted";
   }
   return toReturn;
 };
@@ -294,7 +298,7 @@ const GameBoard = () => {
         {Object.entries(seatsValue).map(([key, value]) => {
           const seatNum = parseInt(key);
           const position = calculateSeatPosition(seatNum, totalSeats);
-
+          console.log(value);
           return (
             <Box
               key={key}
@@ -361,6 +365,55 @@ const GameBoard = () => {
                 >
                   ${value.stack}
                 </Typography>
+              )}
+
+              {/* Position display */}
+              {value.assignedSeat > 0 && value.position && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#ffd700",
+                    background: "rgba(0,0,0,0.8)",
+                    padding: "2px 6px",
+                    borderRadius: "8px",
+                    fontSize: { xs: "0.5rem", sm: "0.6rem", md: "0.7rem" },
+                    fontWeight: "bold",
+                  }}
+                >
+                  {value.position}
+                </Typography>
+              )}
+
+              {/* Cards display */}
+              {value.assignedSeat > 0 && value.cards && value.cards.length > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 0.5,
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                  }}
+                >
+                  {value.cards.map((card, index) => (
+                    <Typography
+                      key={index}
+                      variant="caption"
+                      sx={{
+                        color: "white",
+                        background: "rgba(139, 69, 19, 0.9)",
+                        border: "1px solid #8b4513",
+                        padding: "2px 4px",
+                        borderRadius: "4px",
+                        fontSize: { xs: "0.5rem", sm: "0.6rem", md: "0.7rem" },
+                        fontFamily: "monospace",
+                        minWidth: "20px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {card}
+                    </Typography>
+                  ))}
+                </Box>
               )}
 
               {/* Action buttons */}

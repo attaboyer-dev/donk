@@ -1,6 +1,6 @@
 import { IncomingMessage } from "http";
 import { AppContext, IdentifyableWebSocket } from "@donk/backend-core";
-import { ServerEvent, ServerMessage } from "@donk/shared";
+import { Player, ServerEvent, ServerMessage } from "@donk/shared";
 import { WsContextServer } from "../../types/WsContextServer";
 import { createUuid } from "../../utils/helpers";
 
@@ -40,6 +40,12 @@ export class ConnectionHandler {
       console.log("Message received by %o: %o", wsc.name, message);
       const action: ServerMessage = JSON.parse(message);
       action.nextState = await this.appContext.services.gameStateService.getGameState(gameId);
+      delete action.nextState.deck;
+      action.nextState.players.forEach((p: Player) => {
+        console.log(p);
+        if (p.id !== wsc.id) p.cards = [];
+      });
+      console.log("nextstate %o", action.nextState);
       wsc.send(JSON.stringify(action));
     };
 

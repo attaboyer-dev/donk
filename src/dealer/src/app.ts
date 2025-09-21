@@ -71,7 +71,11 @@ const createAppContext = async () => {
     }
   };
 
-  initDealer();
+  try {
+    initDealer();
+  } catch (error) {
+    console.error("Error initializing dealer:", error);
+  }
 })();
 
 // The process: consume message, convert payload to data structure,

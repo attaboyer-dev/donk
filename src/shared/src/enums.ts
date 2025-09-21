@@ -24,12 +24,13 @@ export enum ServerEvent {
   PlayerBuyin = "PlayerBuyin",
   Ready = "Ready",
   HandStarted = "HandStarted",
+  ButtonMoved = "ButtonMoved",
+  BlindsPosted = "BlindsPosted",
 }
 
 export enum GameEvent {
   StartPlay = "StartPlay",
-  AssignButton = "AssignButton",
-  MoveButton = "MoveButton",
+  AdjustButton = "AdjustButton",
   PayBlind = "PayBlind",
   AssignBlinds = "AssignBlinds",
   StartHand = "StartHand",
@@ -46,16 +47,15 @@ export enum GameEvent {
 }
 
 export enum Position {
-  UTG = "UTG+0",
+  BTN = "Button",
+  SB = "Small Blind",
+  BB = "Big Blind",
+  UTG = "UTG",
   UTG1 = "UTG+1",
   UTG2 = "UTG+2",
   UTG3 = "UTG+3",
   UTG4 = "UTG+4",
   UTG5 = "UTG+5",
-  UTG6 = "UTG+6",
-  UTG7 = "UTG+7",
-  UTG8 = "UTG+8",
-  UTG9 = "UTG+9",
 }
 
 export enum Hand {

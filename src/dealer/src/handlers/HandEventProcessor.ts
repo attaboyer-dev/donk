@@ -7,6 +7,7 @@ export class HandActionProcessor {
     this.appCtx = appContext;
   }
 
+  // TODO: Split "dealer" actions with hand actions?
   async processAction(event: GameEvent, payload: any): Promise<void> {
     switch (event) {
       case GameEvent.StartHand:
@@ -30,6 +31,9 @@ export class HandActionProcessor {
       case GameEvent.Show:
         // TODO: Gameplay action
         break;
+      case GameEvent.EndHand:
+        // TODO:
+        break;
 
       default:
         console.log("Unexpected event");
@@ -39,17 +43,35 @@ export class HandActionProcessor {
   private async handleStartHand(payload: any) {
     const { eventRelayService, gameStateService } = this.appCtx.services;
     const { gameId } = payload;
+
     await gameStateService.beginHand(gameId);
-    const startHandDetails: ServerMessage = {
+    const notification: ServerMessage = {
       type: ServerEvent.HandStarted,
       update: {},
     };
-    await eventRelayService.publishGameEvent(gameId, startHandDetails);
-    await gameStateService.adjustButton(gameId);
-    // await gameStateService.postBlinds(gameId);
-    // await gameStateService.dealCard()
+    await eventRelayService.publishGameEvent(gameId, notification);
 
-    // Start hand, assign (or rotate) button, post blinds, deal cards
-    // To assign the button, I need to know the players, and previous seat that was button.
+    await this.delay(3000);
+
+    await gameStateService.adjustButton(gameId);
+    const buttonNotification: ServerMessage = {
+      type: ServerEvent.ButtonMoved,
+      update: {},
+    };
+    await eventRelayService.publishGameEvent(gameId, buttonNotification);
+
+    await this.delay(3000);
+
+    await gameStateService.postBlinds(gameId);
+    await gameStateService.dealCards(gameId);
+    const blindsNotification: ServerMessage = {
+      type: ServerEvent.BlindsPosted,
+      update: {},
+    };
+    await eventRelayService.publishGameEvent(gameId, blindsNotification);
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

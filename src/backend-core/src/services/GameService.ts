@@ -19,6 +19,6 @@ export class GameService {
   async startGame(tableId: number) {
     const table = asTable(await this.tableRepo.getTableById(tableId));
     const game = asGame(await this.gameRepo.addGame(tableId));
-    return new GameState(game.id, table);
+    return GameState.fromGameAndTable(game, table);
   }
 }
