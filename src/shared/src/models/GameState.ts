@@ -7,11 +7,10 @@ import { Player } from "./Player";
 export class GameState {
   id: number;
   table: Table;
-  players: Array<Player>;
+  players: Array<Player>; // All players at the table, even those not sitting
   currentHand: HandState | null;
   open: boolean;
   inPlay: boolean;
-  playerActOrder: Array<number>;
 
   constructor(
     id: number,
@@ -20,7 +19,6 @@ export class GameState {
     currentHand?: HandState,
     open?: boolean,
     inPlay?: boolean,
-    playerActOrder?: Array<number>,
   ) {
     this.id = id;
     this.table = table;
@@ -28,7 +26,6 @@ export class GameState {
     this.currentHand = currentHand || null;
     this.open = open || true; // Whether the game is playable
     this.inPlay = inPlay || false; // Whether the game is currently serving hands
-    this.playerActOrder = playerActOrder || [];
   }
 
   static fromString(str: string): GameState {
@@ -47,7 +44,6 @@ export class GameState {
         : undefined,
       obj.open,
       obj.inPlay,
-      obj.playerActOrder,
     );
   }
 
@@ -72,11 +68,5 @@ export class GameState {
     const activePlayerIds = this.players.filter((p) => p.isInHand).map((p) => p.id);
     this.currentHand?.pots.push({ amount: 0, eligiblePlayerIds: activePlayerIds });
     return this.currentHand?.pots[0];
-  }
-
-  setActionOrder(isPreFlop: boolean) {
-    const first = isPreFlop
-      ? this.players.find((p) => p.position === Position.BTN)
-      : this.players.find((p) => p.position === Position.SB);
   }
 }
