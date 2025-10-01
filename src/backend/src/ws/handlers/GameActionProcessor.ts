@@ -20,14 +20,6 @@ export class GameActionProcessor {
         await this.handleBuyIn(wsc, userAction.value);
         break;
 
-      case UserEvent.Leave:
-        // TODO: Participation action
-        break;
-
-      case UserEvent.Join:
-        // TODO: Participation action
-        break;
-
       case UserEvent.Rename:
         await this.handleRename(wsc, userAction.value);
         break;
@@ -36,6 +28,8 @@ export class GameActionProcessor {
         await this.handleReady(wsc);
         break;
 
+      case UserEvent.Fold:
+        await this.handleFold(wsc);
       default:
         console.log("Unexpected event");
     }
@@ -65,15 +59,16 @@ export class GameActionProcessor {
   }
 
   private async handleBuyIn(wsc: IdentifyableWebSocket, amount: string): Promise<void> {
+    const { gameStateService, eventRelayService } = this.appContext.services;
     const buyIn = parseFloat(amount);
-    await this.appContext.services.gameStateService.playerBuysIn(wsc, buyIn);
+    await gameStateService.playerBuysIn(wsc, buyIn);
 
     const changeDetails: ServerMessage = {
       type: ServerEvent.PlayerBuyin,
       update: { name: wsc.name, amount },
     };
 
-    await this.appContext.services.eventRelayService.publishGameEvent(wsc.gameId, changeDetails);
+    await eventRelayService.publishGameEvent(wsc.gameId, changeDetails);
   }
 
   private async handleRename(wsc: IdentifyableWebSocket, newName: string): Promise<void> {
@@ -112,5 +107,17 @@ export class GameActionProcessor {
 
       await eventRelayService.publishHandEvent(event);
     }
+  }
+
+  private async handleFold(wsc: IdentifyableWebSocket): Promise<void> {
+    const { id, gameId } = wsc;
+    const { eventRelayService } = this.appContext.services;
+
+    const event = {
+      action: GameEvent.Fold,
+      payload: JSON.stringify({ gameId, playerId: id }),
+    } as HandEvent;
+
+    await eventRelayService.publishHandEvent(event);
   }
 }

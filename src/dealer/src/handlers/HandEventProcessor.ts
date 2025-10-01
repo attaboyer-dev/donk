@@ -1,4 +1,4 @@
-import { AppContext } from "@donk/backend-core";
+import { AppContext, delay } from "@donk/backend-core";
 import { GameEvent, ServerEvent, ServerMessage } from "@donk/shared";
 
 export class HandActionProcessor {
@@ -13,7 +13,7 @@ export class HandActionProcessor {
       case GameEvent.StartHand:
         await this.handleStartHand(payload);
       case GameEvent.Fold:
-        // TODO: Gameplay action
+        await this.handleFold(payload);
         break;
 
       case GameEvent.Check:
@@ -51,7 +51,7 @@ export class HandActionProcessor {
     };
     await eventRelayService.publishGameEvent(gameId, notification);
 
-    await this.delay(3000);
+    await delay(3000);
 
     await gameStateService.adjustButton(gameId);
     const buttonNotification: ServerMessage = {
@@ -60,7 +60,7 @@ export class HandActionProcessor {
     };
     await eventRelayService.publishGameEvent(gameId, buttonNotification);
 
-    await this.delay(3000);
+    await delay(3000);
 
     await gameStateService.postBlinds(gameId);
     await gameStateService.dealCards(gameId);
@@ -69,9 +69,16 @@ export class HandActionProcessor {
       update: {},
     };
     await eventRelayService.publishGameEvent(gameId, blindsNotification);
+    await eventRelayService.publishTimeoutEvent("testing-event", 5000);
   }
 
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  private async handleFold(payload: any) {
+    console.log("folding: %o", payload);
+    const { eventRelayService, gameStateService } = this.appCtx.services;
+
+    const { playerId, gameId } = payload;
+    const gameState = await gameStateService.getGameState(gameId);
+
+    // TODO: Process the action, determine next state (showdown, next player, next street)
   }
 }

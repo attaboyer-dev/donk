@@ -33,7 +33,14 @@ export class GameState {
       obj.id,
       obj.table,
       obj.players,
-      obj.currentHand ? new HandState(obj.currentHand.id, obj.currentHand.deck, obj.currentHand.board, obj.currentHand.pots) : undefined,
+      obj.currentHand
+        ? new HandState(
+            obj.currentHand.id,
+            obj.currentHand.deck,
+            obj.currentHand.board,
+            obj.currentHand.pots,
+          )
+        : undefined,
       obj.open,
       obj.inPlay,
     );
@@ -53,5 +60,16 @@ export class GameState {
         p.cards.push(cardOne, cardTwo);
       }
     });
+  }
+
+  createMainPot() {
+    if (!this.currentHand) throw new Error("Hand not available");
+    const activePlayerIds = this.players.filter((p) => p.isInHand).map((p) => p.id);
+    this.currentHand?.pots.push({ amount: 0, eligiblePlayerIds: activePlayerIds });
+    return this.currentHand?.pots[0];
+  }
+
+  setPlayersInHand() {
+    const activePlayers = this.players.filter((p) => p.isInHand);
   }
 }

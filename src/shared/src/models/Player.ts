@@ -5,7 +5,8 @@ export class Player {
   id: any;
   name: any;
   isReady: boolean;
-  isInHand: boolean;
+  isInHand: boolean; // what is this if the player has folded?
+  nextToAct: boolean;
   assignedSeat: number;
   stack: any;
   cards: Array<string>;
@@ -16,6 +17,7 @@ export class Player {
     this.name = name;
     this.isReady = false; // Indicates whether the player is actively ready
     this.isInHand = false; // Indicates whether the player is in the hand
+    this.nextToAct = false; // Indicates whether the player is next to act
     this.assignedSeat = -1; // What seat is the player sitting at the table
     this.stack = 0.0; // How much money the player has assigned to them
     this.cards = []; // What cards the player has assigned to them
@@ -26,5 +28,12 @@ export class Player {
     return new Player(wsc.id, wsc.name);
   }
 
+  // TODO: make non-static
   static isEligibleForHand = (player: Player) => player.assignedSeat > 0 && player.stack > 0;
+
+  fold() {
+    this.isInHand = false;
+  }
+
+  check() {}
 }

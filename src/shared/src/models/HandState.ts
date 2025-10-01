@@ -1,17 +1,26 @@
 import { Hand } from "../types/Hand";
 import { Pot } from "../types/Pot";
+import { Player } from "./Player";
 
 export class HandState {
   id: number;
   deck: Array<string>;
   board: Array<string>;
   pots: Array<Pot>;
+  players: Array<Player>;
 
-  constructor(id: number, deck?: Array<string>, board?: Array<string>, pots?: Array<Pot>) {
+  constructor(
+    id: number,
+    deck?: Array<string>,
+    board?: Array<string>,
+    pots?: Array<Pot>,
+    players?: Array<Player>,
+  ) {
     this.id = id;
     this.deck = deck || [];
     this.board = board || [];
     this.pots = pots || [];
+    this.players = players || [];
   }
 
   static fromHand(hand: Hand): HandState {

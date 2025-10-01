@@ -7,8 +7,6 @@ export enum UserEvent {
   Sit = "Sit",
   Stand = "Stand",
   BuyIn = "BuyIn",
-  Leave = "Leave",
-  Join = "Join",
   Ready = "Ready",
   Rename = "Rename",
 }
@@ -18,6 +16,7 @@ export enum ServerEvent {
   GameState = "GameState",
   PlayerSat = "PlayerSat",
   PlayerStood = "PlayerStood",
+  PlayerFold = "PlayerFold",
   Rename = "Rename",
   UserJoined = "UserJoined", // Rename to PlayerJoined
   UserLeft = "UserLeft", // Rename to PlayerLeft

@@ -105,7 +105,6 @@ export class GameStateService {
     if (!gameState) {
       throw new Error(`Unable to retrieve game state with id: ${gameId}`);
     }
-    console.log("Retrieving gamestate");
     return GameState.fromString(gameState);
   }
 
@@ -258,11 +257,15 @@ export class GameStateService {
     const smallBlind = gameState.players.find((player) => player.position === Position.SB);
     // TODO: Handle for 2 players
     const bigBlind = gameState.players.find((player) => player.position === Position.BB);
+
     if (!smallBlind || !bigBlind) {
       throw new Error("Unable to assign blinds: No small blind or big blind found");
     }
+    const pot = gameState.createMainPot();
     smallBlind.stack -= gameState.table.sbSize;
     bigBlind.stack -= gameState.table.bbSize;
+    pot.amount += gameState.table.sbSize;
+    pot.amount += gameState.table.bbSize;
 
     console.log("Posted blinds");
     await this.setGameState(gameState);
@@ -273,5 +276,13 @@ export class GameStateService {
     gameState.dealCards();
     this.setGameState(gameState);
     console.log("Dealt cards");
+  }
+
+  async fold(gameId: number, playerId: number) {
+    const gameState = await this.getGameState(gameId);
+    const playerActing = gameState.players.find((p) => p.id === playerId);
+    if (!playerActing) throw Error("acting player could not be determined");
+    playerActing.nextToAct = false;
+    // get the next player?
   }
 }

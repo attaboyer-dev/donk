@@ -17,5 +17,6 @@ export class MessageHandler {
     console.log("User ID - %s - triggering %s", wsc.name, userAction);
 
     await this.gameActionProcessor.processAction(userAction, wsc);
+    await this.handActionProcessor.processAction(userAction, wsc);
   }
 }

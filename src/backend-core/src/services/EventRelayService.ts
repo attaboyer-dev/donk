@@ -40,4 +40,8 @@ export class EventRelayService {
       await this.store.xAdd(DEALER_EVENT_STREAM, "*", event);
     }
   }
+
+  async publishTimeoutEvent(event: any, ms: number) {
+    await this.store.zAdd("timeouts", [{ score: Date.now() + ms, value: event }]);
+  }
 }

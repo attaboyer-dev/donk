@@ -1,8 +1,7 @@
 import { createClient, RedisClientType } from "redis";
-import { DEALER_EVENT_STREAM, initServices } from "@donk/backend-core";
+import { delay, DEALER_EVENT_STREAM, initServices } from "@donk/backend-core";
 import { HandActionProcessor } from "./handlers/HandEventProcessor";
 import { GameEvent } from "@donk/shared";
-
 const EVENT_CONSUMER_GROUP_NAME = "dealers";
 
 const createAppContext = async () => {
@@ -71,8 +70,48 @@ const createAppContext = async () => {
     }
   };
 
+  async function handleTimeout(event: any) {
+    console.log(`[TIMEOUT] Processing timeout at ${new Date().toISOString()}`);
+    await processor.processAction(GameEvent.Fold, JSON.parse(event));
+  }
+
+  const pollLoop = async () => {
+    const redis = appCtx.store;
+    while (true) {
+      try {
+        // Atomically pop the earliest timeout
+        const result = await redis.zPopMin("timeouts");
+
+        // Nothing due yet
+        if (!result) {
+          await delay(100);
+          continue;
+        }
+
+        const { value: itemId, score } = result;
+        const dueAt = score;
+        const now = Date.now();
+
+        if (dueAt > now) {
+          // Not due yet → put it back and wait
+          await redis.zAdd("timeouts", [{ score: dueAt, value: itemId }]);
+          await delay(Math.min(dueAt - now, 100));
+          continue;
+        }
+
+        // Process the timeout
+        await handleTimeout(itemId);
+      } catch (err) {
+        console.error("[ERROR] in poll loop:", err);
+        // brief backoff to avoid tight error loops
+        await delay(500);
+      }
+    }
+  };
+
   try {
     initDealer();
+    pollLoop();
   } catch (error) {
     console.error("Error initializing dealer:", error);
   }
