@@ -19,7 +19,7 @@ export class Player {
     this.isInHand = false; // Indicates whether the player is in the hand
     this.nextToAct = false; // Indicates whether the player is next to act
     this.assignedSeat = -1; // What seat is the player sitting at the table
-    this.stack = 0.0; // How much money the player has assigned to them
+    this.stack = 0; // How much money the player has assigned to them in cents
     this.cards = []; // What cards the player has assigned to them
     this.position = null;
   }
@@ -28,7 +28,6 @@ export class Player {
     return new Player(wsc.id, wsc.name);
   }
 
-  // TODO: make non-static
   isEligibleForHand() {
     return this.assignedSeat > 0 && this.stack > 0;
   }

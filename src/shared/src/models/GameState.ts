@@ -1,3 +1,4 @@
+import { Position } from "../enums";
 import { Game } from "../types/Game";
 import { Table } from "../types/Table";
 import { HandState } from "./HandState";
@@ -10,6 +11,7 @@ export class GameState {
   currentHand: HandState | null;
   open: boolean;
   inPlay: boolean;
+  playerActOrder: Array<number>;
 
   constructor(
     id: number,
@@ -18,6 +20,7 @@ export class GameState {
     currentHand?: HandState,
     open?: boolean,
     inPlay?: boolean,
+    playerActOrder?: Array<number>,
   ) {
     this.id = id;
     this.table = table;
@@ -25,6 +28,7 @@ export class GameState {
     this.currentHand = currentHand || null;
     this.open = open || true; // Whether the game is playable
     this.inPlay = inPlay || false; // Whether the game is currently serving hands
+    this.playerActOrder = playerActOrder || [];
   }
 
   static fromString(str: string): GameState {
@@ -32,7 +36,7 @@ export class GameState {
     return new GameState(
       obj.id,
       obj.table,
-      obj.players,
+      obj.players?.map((p: any) => Object.assign(new Player(p.id, p.name), p)),
       obj.currentHand
         ? new HandState(
             obj.currentHand.id,
@@ -43,6 +47,7 @@ export class GameState {
         : undefined,
       obj.open,
       obj.inPlay,
+      obj.playerActOrder,
     );
   }
 
@@ -69,7 +74,9 @@ export class GameState {
     return this.currentHand?.pots[0];
   }
 
-  setPlayersInHand() {
-    const activePlayers = this.players.filter((p) => p.isInHand);
+  setActionOrder(isPreFlop: boolean) {
+    const first = isPreFlop
+      ? this.players.find((p) => p.position === Position.BTN)
+      : this.players.find((p) => p.position === Position.SB);
   }
 }

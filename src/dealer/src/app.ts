@@ -70,9 +70,10 @@ const createAppContext = async () => {
     }
   };
 
-  async function handleTimeout(event: any) {
+  async function handleTimeout(value: any) {
     console.log(`[TIMEOUT] Processing timeout at ${new Date().toISOString()}`);
-    await processor.processAction(GameEvent.Fold, JSON.parse(event));
+    console.log("value received: %o", value);
+    await processor.processAction(GameEvent.Fold, {});
   }
 
   const pollLoop = async () => {
@@ -88,19 +89,19 @@ const createAppContext = async () => {
           continue;
         }
 
-        const { value: itemId, score } = result;
+        const { value, score } = result;
         const dueAt = score;
         const now = Date.now();
 
         if (dueAt > now) {
           // Not due yet → put it back and wait
-          await redis.zAdd("timeouts", [{ score: dueAt, value: itemId }]);
+          await redis.zAdd("timeouts", [{ score: dueAt, value }]);
           await delay(Math.min(dueAt - now, 100));
           continue;
         }
 
         // Process the timeout
-        await handleTimeout(itemId);
+        await handleTimeout(value);
       } catch (err) {
         console.error("[ERROR] in poll loop:", err);
         // brief backoff to avoid tight error loops

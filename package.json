@@ -13,8 +13,8 @@
     "clean": "rm -rf src/*/dist",
     "build": "yarn workspaces foreach -v --all --topological run build",
     "fe": "yarn workspace @donk/frontend dev",
-    "be": "yarn workspace @donk/backend dev",
-    "dealer": "yarn workspace @donk/dealer dev",
+    "be": "yarn build; yarn workspace @donk/backend dev",
+    "dealer": "yarn build; yarn workspace @donk/dealer dev",
     "db": "(cd src/database && docker compose -f docker/compose/docker-compose.yml up --build)"
   },
   "devDependencies": {

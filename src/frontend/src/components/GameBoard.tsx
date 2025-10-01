@@ -1,4 +1,12 @@
-import { ServerEvent, ServerMessage, UserEvent, Player, Table, Position } from "@donk/shared";
+import {
+  ServerEvent,
+  ServerMessage,
+  UserEvent,
+  Player,
+  Table,
+  Position,
+  formatCents,
+} from "@donk/shared";
 import { Box, Button, Typography, IconButton, Drawer, Toolbar, Divider } from "@mui/material";
 import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
@@ -39,11 +47,8 @@ const sendWSMessage = (ws: WebSocket | null, action: UserEvent, val: any) => {
   } else if (action === UserEvent.Stand) {
     message = JSON.stringify(standMessage(val));
   } else if (action === UserEvent.BuyIn) {
-    message = JSON.stringify(buyInMessage(val));
-  } else if (action === UserEvent.Leave) {
-    message = JSON.stringify(leaveMessage());
-  } else if (action === UserEvent.Join) {
-    message = JSON.stringify(joinMessage());
+    const centsValue = Math.round(parseFloat(val) * 100);
+    message = JSON.stringify(buyInMessage(centsValue));
   } else if (action === UserEvent.Rename) {
     message = JSON.stringify(renameMessage(val));
   } else if (action === UserEvent.Ready) {
@@ -139,6 +144,7 @@ const GameBoard = () => {
   const [seatsValue, setSeatsValue] = React.useState<{ [key: number]: Player }>(emptySeats);
   const [playersValue, setPlayersValue] = React.useState([]);
   const [actionLogValue, setActionLogValue] = React.useState([]);
+  const [currentHandValue, setCurrentHandValue] = React.useState<any>(null);
 
   useEffect(() => {
     // Fetch table data from API
@@ -181,7 +187,7 @@ const GameBoard = () => {
         console.log("currentHand", currentHand);
       },
       onNextState: (event: any) => {
-        const { players } = event.nextState;
+        const { players, currentHand } = event.nextState;
         if (userValue && event.type !== ServerEvent.Rename) {
           const userIndex = players.findIndex((p: any) => p.name === userValue.name);
           setUserValue(players[userIndex]);
@@ -194,6 +200,7 @@ const GameBoard = () => {
         });
         setPlayersValue(players);
         setSeatsValue(nextSeats);
+        setCurrentHandValue(currentHand);
       },
       onEventLog: (event: ServerMessage) => {
         setActionLogValue((prev) => [...prev, eventToLog(event)]);
@@ -288,11 +295,66 @@ const GameBoard = () => {
             borderRadius: "50%",
             border: "2px solid rgb(205, 196, 190)",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
+            gap: 1,
             boxShadow: "inset 0 0 20px rgba(0,0,0,0.3)",
+            padding: 2,
           }}
-        ></Box>
+        >
+          {/* Display pots */}
+          {currentHandValue?.pots && currentHandValue.pots.length > 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              {currentHandValue.pots.map((pot: any, index: number) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    background: "rgba(0,0,0,0.6)",
+                    padding: "8px 16px",
+                    borderRadius: "12px",
+                    border: "2px solid #ffd700",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "#ffd700",
+                      fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {currentHandValue.pots.length > 1
+                      ? index === 0
+                        ? "Main Pot"
+                        : `Side Pot ${index}`
+                      : "Pot"}
+                  </Typography>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: "white",
+                      fontSize: { xs: "0.9rem", sm: "1rem", md: "1.2rem" },
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {formatCents(pot.amount)}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
 
         {/* Render seats around the oval */}
         {Object.entries(seatsValue).map(([key, value]) => {
@@ -363,7 +425,7 @@ const GameBoard = () => {
                     fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.8rem" },
                   }}
                 >
-                  ${value.stack}
+                  {formatCents(value.stack)}
                 </Typography>
               )}
 

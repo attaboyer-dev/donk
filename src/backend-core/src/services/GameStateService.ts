@@ -261,12 +261,11 @@ export class GameStateService {
     if (!smallBlind || !bigBlind) {
       throw new Error("Unable to assign blinds: No small blind or big blind found");
     }
+
     const pot = gameState.createMainPot();
     smallBlind.stack -= gameState.table.sbSize;
     bigBlind.stack -= gameState.table.bbSize;
-    pot.amount += gameState.table.sbSize;
-    pot.amount += gameState.table.bbSize;
-
+    pot.amount += gameState.table.sbSize + gameState.table.bbSize;
     console.log("Posted blinds");
     await this.setGameState(gameState);
   }
