@@ -1,12 +1,4 @@
-import {
-  ServerEvent,
-  ServerMessage,
-  UserEvent,
-  Player,
-  Table,
-  Position,
-  formatCents,
-} from "@donk/shared";
+import { ServerEvent, ServerMessage, UserEvent, Player, Table, formatCents } from "@donk/shared";
 import { Box, Button, Typography, IconButton, Drawer, Toolbar, Divider } from "@mui/material";
 import { Info, ChevronLeft, ChevronRight, Person } from "@mui/icons-material";
 import React, { useEffect } from "react";
@@ -23,8 +15,6 @@ const showMessage = () => ({ type: UserEvent.Show });
 const sitMessage = (num) => ({ type: UserEvent.Sit, val: num });
 const standMessage = (num) => ({ type: UserEvent.Stand, val: num });
 const buyInMessage = (amount) => ({ type: UserEvent.BuyIn, val: amount });
-const leaveMessage = () => ({ type: UserEvent.Leave });
-const joinMessage = () => ({ type: UserEvent.Join });
 const renameMessage = (name) => ({ type: UserEvent.Rename, val: name });
 const readyMessage = () => ({ type: UserEvent.Ready });
 
