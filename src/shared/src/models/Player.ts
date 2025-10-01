@@ -29,10 +29,8 @@ export class Player {
   }
 
   // TODO: make non-static
-  static isEligibleForHand = (player: Player) => player.assignedSeat > 0 && player.stack > 0;
-
-  fold() {
-    this.isInHand = false;
+  isEligibleForHand() {
+    return this.assignedSeat > 0 && this.stack > 0;
   }
 
   check() {}

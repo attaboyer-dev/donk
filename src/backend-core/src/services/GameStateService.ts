@@ -160,7 +160,7 @@ export class GameStateService {
   private setPlayersInHand(gameState: GameState) {
     const { players } = gameState;
     players.forEach((player) => {
-      if (Player.isEligibleForHand(player)) {
+      if (player.isEligibleForHand()) {
         player.isInHand = true;
       }
     });
